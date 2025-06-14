@@ -1,6 +1,6 @@
 import TrainerModel from '../models/TrainerModel.js';
 import GameStateModel from '../models/GameStateModel.js';
-import GameView from '../views/GameView.js'; 
+import GameView from '../views/GameView.js';
 import CardModel from "../models/CardModel.js";
 class GameController {
     constructor(tcgdx) {
@@ -18,10 +18,10 @@ class GameController {
             turn: 'player', // 'player' ou 'opponent'
             battleLog: []
         };
-        
+
         // Observer pattern
         this.gameState.addObserver(this.gameView);
-        
+
         this.init();
     }
 
@@ -29,7 +29,7 @@ class GameController {
         this.gameState.load();
         this.generateTrainers();
         this.startTimer();
-        
+
         // Charger quelques cartes au démarrage si aucune carte
         if (this.gameState.deck.length === 0 && this.gameState.hand.length === 0) {
             await this.drawCards();
@@ -49,14 +49,14 @@ class GameController {
         }
 
         this.gameView.showLoading(true);
-        
+
         try {
             const cards = await this.pokemonAPI.getRandomCards(5);
             const cardModels = cards.map(cardData => new CardModel(cardData));
-            
+
             this.gameState.addCardsToDeck(cardModels);
             this.gameState.setLastDrawTime();
-            
+
         } catch (error) {
             console.error('Erreur lors du tirage:', error);
             this.gameView.onError('Erreur lors du tirage des cartes. Veuillez réessayer.');
@@ -83,7 +83,7 @@ class GameController {
             'Prof. Chen', 'Régis', 'Flora', 'Max Sterling',
             'Cynthia', 'Champion Red', 'Blue Oak', 'Léo'
         ];
-        
+
         const trainers = trainerNames.map((name, index) => new TrainerModel({
             id: index + 1,
             name,
@@ -91,7 +91,7 @@ class GameController {
             battles: Math.floor(Math.random() * 100),
             online: Math.random() > 0.3
         }));
-        
+
         this.gameState.trainers = trainers;
         this.gameState.save();
     }
@@ -105,13 +105,13 @@ class GameController {
         // Sélection visuelle
         document.querySelectorAll('.trainer-card').forEach(el => el.classList.remove('selected'));
         if (element) element.classList.add('selected');
-        
+
         this.gameState.selectedTrainer = trainer;
         this.gameView.showTrainerModal(trainer);
     }
 
     // === NOUVEAU SYSTÈME DE COMBAT ===
-    
+
     challengeTrainer(trainer) {
         if (this.gameState.hand.length === 0) {
             this.gameView.onError('Vous devez avoir au moins une carte en main pour combattre!');
@@ -124,10 +124,10 @@ class GameController {
         this.battleState.opponentHP = 100;
         this.battleState.turn = 'player';
         this.battleState.battleLog = [`Combat contre ${trainer.name} commencé!`];
-        
+
         // Générer une carte pour l'adversaire
         this.generateOpponentCard();
-        
+
         this.gameView.showBattleArena(this.battleState);
     }
 
@@ -155,7 +155,7 @@ class GameController {
         if (!this.battleState.inBattle || this.battleState.turn !== 'player') {
             return;
         }
-        
+
         this.battleState.playerActiveCard = card;
         this.gameView.updateBattleArena(this.battleState);
     }
@@ -168,7 +168,7 @@ class GameController {
 
         const damage = this.battleState.playerActiveCard.getAttackPower() || 25;
         this.battleState.opponentHP = Math.max(0, this.battleState.opponentHP - damage);
-        
+
         this.battleState.battleLog.push(
             `${this.battleState.playerActiveCard.name} attaque pour ${damage} dégâts!`
         );
@@ -180,7 +180,7 @@ class GameController {
 
         this.battleState.turn = 'opponent';
         this.gameView.updateBattleArena(this.battleState);
-        
+
         // Tour de l'adversaire après un délai
         setTimeout(() => {
             this.opponentAttack();
@@ -192,7 +192,7 @@ class GameController {
 
         const damage = this.battleState.opponentActiveCard.getAttackPower() || 20;
         this.battleState.playerHP = Math.max(0, this.battleState.playerHP - damage);
-        
+
         this.battleState.battleLog.push(
             `${this.battleState.opponentActiveCard.name} attaque pour ${damage} dégâts!`
         );
@@ -209,7 +209,7 @@ class GameController {
     endBattle(playerWon) {
         this.battleState.inBattle = false;
         this.gameState.battles++;
-        
+
         if (playerWon) {
             this.gameState.credits += 50;
             this.battleState.battleLog.push('🎉 Victoire! Vous gagnez 50 crédits!');
@@ -218,10 +218,10 @@ class GameController {
             this.battleState.battleLog.push('💀 Défaite... Réessayez!');
             this.gameView.showMessage('Défaite... Réessayez!', 'error');
         }
-        
+
         this.gameState.save();
         this.gameView.updateBattleArena(this.battleState);
-        
+
         // Fermer l'arène après 3 secondes
         setTimeout(() => {
             this.gameView.hideBattleArena();
@@ -243,28 +243,28 @@ class GameController {
     submitTrainerFeedback() {
         const comment = document.getElementById('commentInput').value;
         const trainer = this.gameState.selectedTrainer;
-        
+
         if (!trainer) return;
-        
+
         if (comment.trim() === '') {
             this.gameView.onError('Veuillez saisir un commentaire.');
             return;
         }
-        
+
         if (this.selectedRating === 0) {
             this.gameView.onError('Veuillez sélectionner une note.');
             return;
         }
-        
+
         trainer.addComment(comment, this.selectedRating);
         this.gameState.battles++;
         this.gameState.save();
-        
+
         // Reset du formulaire
         document.getElementById('commentInput').value = '';
         this.gameView.setRating(0);
         this.selectedRating = 0;
-        
+
         this.gameView.closeTrainerModal();
         this.gameView.showMessage(`Commentaire envoyé à ${trainer.name}!`, 'success');
     }
@@ -278,95 +278,94 @@ class GameController {
     }
 
     // Dans votre GameController, ajoutez cette méthode
-startBattle(trainerName) {
-    // Vérifier si le joueur a des cartes
-    if (this.gameState.hand.length === 0) {
-      this.gameView.onError(
-        "Vous devez avoir des cartes en main pour combattre!"
-      );
-      return;
+    startBattle(trainerName) {
+        // Vérifier si le joueur a des cartes
+        if (this.gameState.hand.length === 0) {
+            this.gameView.onError(
+                "Vous devez avoir des cartes en main pour combattre!"
+            );
+            return;
+        }
+
+        // Trouver le dresseur
+        const opponent = this.gameState.trainers.find(t => t.name === trainerName);
+        if (!opponent) {
+            this.gameView.onError('Dresseur introuvable!');
+            return;
+        }
+
+        // Initialiser l'état de combat
+        this.battleState = {
+            inBattle: true,
+            opponent: opponent,
+            playerCard: null,
+            opponentCard: null,
+            playerHP: 100,
+            opponentHP: 100
+        };
+
+        // Lancer l'interface de combat
+        this.gameView.launchBattle();
+
+        // Générer une carte pour l'adversaire
+        this.generateOpponentCard();
+
+        this.gameView.showMessage(`Combat contre ${trainerName} commencé!`, 'success');
     }
-    
-    // Trouver le dresseur
-    const opponent = this.gameState.trainers.find(t => t.name === trainerName);
-    if (!opponent) {
-      this.gameView.onError('Dresseur introuvable!');
-      return;
+
+    async generateOpponentCard() {
+        try {
+            // Essayer de récupérer une vraie carte
+            const cards = await this.pokemonAPI.getRandomCards(1);
+            this.battleState.opponentCard = new CardModel(cards[0]);
+        } catch (error) {
+            // Carte de fallback si l'API échoue
+        }
+
+        // Afficher la carte de l'adversaire
+        this.showOpponentCard();
     }
-    
-    // Initialiser l'état de combat
-    this.battleState = {
-      inBattle: true,
-      opponent: opponent,
-      playerCard: null,
-      opponentCard: null,
-      playerHP: 100,
-      opponentHP: 100
-    };
 
-    // Lancer l'interface de combat
-    this.gameView.launchBattle();
+    showOpponentCard() {
+        const opponentCardEl = document.getElementById('opponentActiveCard');
 
-    // Générer une carte pour l'adversaire
-    this.generateOpponentCard();
-    
-    this.gameView.showMessage(`Combat contre ${trainerName} commencé!`, 'success');
-  }
-
-  async generateOpponentCard() {
-    try {
-      // Essayer de récupérer une vraie carte
-      const cards = await this.pokemonAPI.getRandomCards(1);
-      this.battleState.opponentCard = new CardModel(cards[0]);
-    } catch (error) {
-      // Carte de fallback si l'API échoue
-    }
-    
-    // Afficher la carte de l'adversaire
-    this.showOpponentCard();
-  }
-
-  showOpponentCard() {
-    const opponentCardEl = document.getElementById('opponentActiveCard');
-    
-    if (opponentCardEl && this.battleState.opponentCard) {
-      const card = this.battleState.opponentCard;
-      opponentCardEl.innerHTML = `
+        if (opponentCardEl && this.battleState.opponentCard) {
+            const card = this.battleState.opponentCard;
+            opponentCardEl.innerHTML = `
           <div class="card-info">
-                        ${
-                  card.image
-                    ? `<img src="${card.image}" alt="${card.name}" class="card-image full-cover" style="max-heigth:400px;max-width:400px">`
+                        ${card.image
+                    ? `<img src="${card.image}" alt="${card.name}"  style="max-width:200px">`
                     : ""
                 }
           </div>
       `;
+        }
     }
-  }
 
-  playerAttack() {
-    if (!this.battleState.inBattle || !this.selectedBattleCard) {
-      this.gameView.onError('Sélectionnez une carte pour attaquer!');
-      return;
-    }
-    
-    const playerDamage = this.selectedBattleCard.getAttackPower() || 25;
-    this.battleState.opponentHP = Math.max(0, this.battleState.opponentHP - playerDamage);
-    
-    this.gameView.showMessage(`Vous attaquez pour ${playerDamage} dégâts!`, 'success');
-    
-    // Vérifier si l'adversaire est vaincu
-    if (this.battleState.opponentHP <= 0) {
-      this.endBattle(true);
-      return;
-    }
-    
-    // Tour de l'adversaire
-    setTimeout(() => {
-      this.opponentAttack();
-    }, 1500);
-  }
+    playerAttack() {
+        if (!this.battleState.inBattle || !this.selectedBattleCard) {
+            this.gameView.onError('Sélectionnez une carte pour attaquer!');
+            return;
+        }
 
- 
+        const playerDamage = this.selectedBattleCard.getAttackPower() || 25;
+        this.battleState.opponentHP = Math.max(0, this.battleState.opponentHP - playerDamage);
+
+        this.gameView.showMessage(`Vous attaquez pour ${playerDamage} dégâts!`, 'success');
+
+        // Vérifier si l'adversaire est vaincu
+        if (this.battleState.opponentHP <= 0) {
+            this.endBattle(true);
+            return;
+        }
+
+        // Tour de l'adversaire
+        setTimeout(() => {
+            this.opponentAttack();
+        }, 1500);
+    }
+
+
 }
 
 export default GameController
@@ -403,16 +402,16 @@ class PokemonAPIService {
                     return cards;
                 }
             }
-            
+
             // Méthode 2: Récupération directe de cartes avec fetchCards
             const cards = await this.getCardsDirectly(count);
             if (cards && cards.length > 0) {
                 return cards;
             }
-            
+
             // Méthode 3: Fallback si tout échoue
             return this.generateFallbackCards(count);
-            
+
         } catch (error) {
             console.warn('Erreur API TCGdx, utilisation du fallback:', error);
             return this.generateFallbackCards(count);
@@ -423,33 +422,33 @@ class PokemonAPIService {
         try {
             // Sélectionner un set aléatoire
             const randomSet = this.availableSets[Math.floor(Math.random() * Math.min(this.availableSets.length, 20))];
-            
+
             // Récupérer les détails du set avec fetchSet
             const setWithCards = await this.tcgdx.fetchSet(randomSet.id);
-            
+
             if (!setWithCards.cards || setWithCards.cards.length === 0) {
                 throw new Error('Aucune carte dans ce set');
             }
-            
+
             // Sélectionner des cartes aléatoires du set
             const selectedCards = [];
             const availableCards = [...setWithCards.cards]; // Copie pour éviter mutation
-            
+
             for (let i = 0; i < Math.min(count, availableCards.length); i++) {
                 const randomIndex = Math.floor(Math.random() * availableCards.length);
                 const card = availableCards[randomIndex];
-                
+
                 selectedCards.push({
                     ...card,
                     id: `${card.id}-${Date.now()}-${i}` // ID unique
                 });
-                
+
                 // Éviter les doublons
                 availableCards.splice(randomIndex, 1);
             }
-            
+
             return selectedCards;
-            
+
         } catch (error) {
             console.warn('Erreur getCardsFromRandomSet:', error);
             throw error;
@@ -458,20 +457,20 @@ class PokemonAPIService {
 
     async getCardsDirectly(count) {
         try {
-            
+
             // Récupérer toutes les cartes (sans paramètre)
             const cards = await this.tcgdx.fetchCards();
-    
+
             if (!cards || cards.length === 0) {
                 throw new Error('Aucune carte trouvée');
             }
-            
+
             // Sélectionner des cartes aléatoires
             const selectedCards = [];
             for (let i = 0; i < Math.min(count, cards.length); i++) {
                 const randomIndex = Math.floor(Math.random() * cards.length);
                 const card = cards[randomIndex];
-                
+
                 selectedCards.push({
                     ...card,
                     id: `${card.id}-${Date.now()}-${i}`
@@ -479,7 +478,7 @@ class PokemonAPIService {
             }
 
             return selectedCards;
-            
+
         } catch (error) {
             console.warn('Erreur getCardsDirectly:', error);
             throw error;
@@ -500,17 +499,17 @@ class PokemonAPIService {
     async getRandomCardFromSpecificSet(setId) {
         try {
             const setData = await this.tcgdx.fetchSet(setId);
-            
+
             if (!setData.cards || setData.cards.length === 0) {
                 return null;
             }
-            
+
             const randomCard = setData.cards[Math.floor(Math.random() * setData.cards.length)];
             return {
                 ...randomCard,
                 id: `${randomCard.id}-${Date.now()}`
             };
-            
+
         } catch (error) {
             console.error('Erreur getRandomCardFromSpecificSet:', error);
             return null;
@@ -520,33 +519,33 @@ class PokemonAPIService {
     async getCardsFromSerie(serieId, count = 5) {
         try {
             const serieData = await this.tcgdx.fetchSerie(serieId);
-            
+
             if (!serieData.sets || serieData.sets.length === 0) {
                 throw new Error('Aucun set dans cette série');
             }
-            
+
             // Prendre un set aléatoire de la série
             const randomSet = serieData.sets[Math.floor(Math.random() * serieData.sets.length)];
             const setData = await this.tcgdx.fetchSet(randomSet.id);
-            
+
             if (!setData.cards || setData.cards.length === 0) {
                 throw new Error('Aucune carte dans ce set');
             }
-            
+
             // Sélectionner des cartes aléatoires
             const selectedCards = [];
             for (let i = 0; i < Math.min(count, setData.cards.length); i++) {
                 const randomIndex = Math.floor(Math.random() * setData.cards.length);
                 const card = setData.cards[randomIndex];
-                
+
                 selectedCards.push({
                     ...card,
                     id: `${card.id}-${Date.now()}-${i}`
                 });
             }
-            
+
             return selectedCards;
-            
+
         } catch (error) {
             console.warn('Erreur getCardsFromSerie:', error);
             throw error;
@@ -562,19 +561,19 @@ class PokemonAPIService {
             'Psyduck', 'Golduck', 'Machop', 'Machoke', 'Tentacool', 'Tentacruel',
             'Magikarp', 'Ditto', 'Porygon', 'Aerodactyl', 'Jinx', 'Onix'
         ];
-        
+
         const types = [
             { name: 'Grass' }, { name: 'Fire' }, { name: 'Water' },
             { name: 'Lightning' }, { name: 'Psychic' }, { name: 'Fighting' },
             { name: 'Darkness' }, { name: 'Metal' }, { name: 'Fairy' },
             { name: 'Dragon' }, { name: 'Colorless' }
         ];
-        
+
         const rarities = [
-            { name: 'Common' }, { name: 'Uncommon' }, { name: 'Rare' }, 
+            { name: 'Common' }, { name: 'Uncommon' }, { name: 'Rare' },
             { name: 'Ultra Rare' }, { name: 'Secret Rare' }
         ];
-        
+
         const sets = [
             { name: 'Base Set', id: 'base1' },
             { name: 'Jungle', id: 'jungle' },
@@ -583,17 +582,17 @@ class PokemonAPIService {
             { name: 'Gym Heroes', id: 'gymheroes' },
             { name: 'Neo Genesis', id: 'neogenesis' }
         ];
-        
+
         const cards = [];
         for (let i = 0; i < count; i++) {
             const name = pokemonNames[Math.floor(Math.random() * pokemonNames.length)];
             const type = types[Math.floor(Math.random() * types.length)];
             const rarity = rarities[Math.floor(Math.random() * rarities.length)];
             const set = sets[Math.floor(Math.random() * sets.length)];
-            
+
             const hp = Math.floor(Math.random() * 200) + 50;
             const attackPower = Math.floor(Math.random() * 100) + 20;
-            
+
             cards.push({
                 id: `fallback-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${i}`,
                 name,
@@ -623,7 +622,7 @@ class PokemonAPIService {
                 level: Math.floor(Math.random() * 100) + 1
             });
         }
-        
+
         return cards;
     }
 

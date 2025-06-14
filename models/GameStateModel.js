@@ -70,7 +70,6 @@ class GameStateModel {
   }
 
   getRemainingTime() {
-    console.log("object");
     if (!this.lastDrawTime) return 0;
     const now = Date.now();
     const timeSinceLastDraw = now - this.lastDrawTime;

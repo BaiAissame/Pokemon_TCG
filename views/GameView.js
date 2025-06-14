@@ -116,6 +116,12 @@ class GameView {
       const cardEl = this.createCardElement(card, "hand");
       handEl.appendChild(cardEl);
     });
+
+    // pour n'affiche qu'une carte de la main
+    // if (hand.length > 0) {
+    //   const cardEl = this.createCardElement(hand[0], "hand");
+    //   handEl.appendChild(cardEl);
+    // }
   }
 
   updateStats(gameState) {
@@ -197,9 +203,9 @@ class GameView {
         }
             </div>
         `;
+      cardEl.addEventListener("click", () => window.app.showCardDetails(card));
     }
 
-    cardEl.addEventListener("click", () => window.app.showCardDetails(card));
     cardEl.addEventListener("dragstart", this.handleDragStart.bind(this));
     cardEl.addEventListener("dragend", this.handleDragEnd.bind(this));
 
@@ -237,7 +243,7 @@ class GameView {
 
     cardDetail.innerHTML = `
                 ${card.image
-        ? `<img src="${card.image}" alt="${card.name}" style="max-width: 800px;max-height: 800px;min-width:600px;min-height:600px;">`
+        ? `<img src="${card.image}" alt="${card.name}" style="max-width: 400px;">`
         : ""
       }
         `;
@@ -297,20 +303,28 @@ class GameView {
                 </div>
 
                 <!-- Carte de l'adversaire (droite) -->
-                <div class="opponent-active-zone">
+                <!-- <div class="opponent-active-zone">
                     <h4>Carte adverse</h4>
                     <div class="active-card-slot" id="opponentActiveCard">
                         <div class="empty-card-slot">Carte mystère</div>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <!-- Ma main en bas -->
             <div class="battle-hand-zone">
+              <div>
                 <h4>🃏 Vos cartes disponibles</h4>
                 <div class="battle-hand-container" id="battleHand">
                     <!-- Les cartes de la main seront ajoutées ici -->
                 </div>
+              </div>
+              <div class="opponent-active-zone">
+                <h4>Carte adverse</h4>
+                <div class="active-card-slot" id="opponentActiveCard">
+                  <div class="empty-card-slot">Carte mystère</div>
+                </div>
+              </div>
             </div>
 
             <!-- Actions de combat -->
