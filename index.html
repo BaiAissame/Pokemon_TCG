@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon TCG - Architecture MVC</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">⚡ Pokemon TCG Pro ⚡</div>
+        <div class="player-info">
+            <div class="trainer-name">Dresseur: <span id="trainerName">Ash Ketchup</span></div>
+            <div>💰 Crédits: <span id="credits">100</span></div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="game-area">
+            <div class="deck-section">
+                <div class="deck">
+                    <h3>🎴 Ma Pioche (<span id="deckCount">0</span>)</h3>
+                    <div class="cards-container" id="deck"></div>
+                </div>
+                <div class="deck">
+                    <h3>🃏 Ma Main (<span id="handCount">0</span>)</h3>
+                    <div class="cards-container" id="hand"></div>
+                </div>
+            </div>
+
+            <div class="battle-section" id="battle-section">
+                <h3>⚔️ Zone de Combat</h3>
+                <div class="trainers-list" id="trainersList"></div>
+                <button class="btn" onclick="app.refreshTrainers()">🔄 Actualiser les Dresseurs</button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="action-panel">
+                <h3>🎯 Actions</h3>
+                <div id="drawTimer" class="timer">Prêt à tirer!</div>
+                <button class="btn" id="drawBtn" onclick="app.drawCards()">
+                    🎴 Tirer un Booster (5 cartes)
+                </button>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    Ouverture du booster...
+                </div>
+                <div id="message"></div>
+            </div>
+
+            <div class="action-panel">
+                <h3>📊 Statistiques</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalCards">0</div>
+                        <div class="stat-label">Cartes totales</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="rareCards">0</div>
+                        <div class="stat-label">Cartes rares</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="boosters">0</div>
+                        <div class="stat-label">Boosters ouverts</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="battles">0</div>
+                        <div class="stat-label">Combats</div>
+                    </div>
+                </div>
+                <p><strong>Dernière session:</strong> <span id="lastDraw">Jamais</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for card details -->
+    <div id="cardModal" class="modal">
+        <div class="modal-content" style="display: flex;flex-direction: column;align-items: center;">
+            <button class="close-btn" onclick="app.closeModal()">&times;</button>
+            <h2 style="text-align: center;">Détails de la Carte</h2>
+            <div class="card-detail" id="cardDetail"></div>
+        </div>
+    </div>
+
+    <!-- Modal for trainer interaction -->
+    <div id="trainerModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="app.closeTrainerModal()">&times;</button>
+            <h2 id="trainerModalTitle">Interaction avec le Dresseur</h2>
+            <div class="comment-section">
+                <h4>Laisser un commentaire:</h4>
+                <textarea class="comment-input" id="commentInput" placeholder="Votre commentaire sur ce dresseur..."></textarea>
+                <h4>Note:</h4>
+                <div class="rating" id="rating">
+                    <span class="star" data-rating="1">⭐</span>
+                    <span class="star" data-rating="2">⭐</span>
+                    <span class="star" data-rating="3">⭐</span>
+                    <span class="star" data-rating="4">⭐</span>
+                    <span class="star" data-rating="5">⭐</span>
+                </div>
+                <button class="btn" onclick="app.submitTrainerFeedback()">💾 Envoyer</button>
+            </div>
+        </div>
+    </div>
+
+  <!-- Scripts MVC -->
+<!-- Ajoutez type="module" à TOUS les scripts -->
+<script type="module" src="models/CardModel.js"></script>
+<script type="module" src="models/TrainerModel.js"></script>
+<script type="module" src="models/GameStateModel.js"></script>
+<script type="module" src="views/GameView.js"></script>
+<script type="module" src="controllers/GameController.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tcgdex/sdk@2/dist/tcgdex.browser.js"></script>
+  <script type="module">
+    import GameController from './controllers/GameController.js';
+    // Instancier le SDK
+    const tcgdex = new TCGdex('fr');
+    
+
+      // Initialisation au chargement de la page
+      document.addEventListener('DOMContentLoaded', () => {
+          const app = new GameController(tcgdex);
+          window.app = app;
+
+      });
+  </script>
+</body>
+</html>
