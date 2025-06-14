@@ -130,18 +130,18 @@ class GameView {
   }
 
   updateTimer(gameState) {
-    const remainingTime = gameState.getRemainingTime;
+    const remainingTime = gameState.getRemainingTime();
     const timerEl = document.getElementById("drawTimer");
     const drawBtn = document.getElementById("drawBtn");
-      const minutes = Math.floor(remainingTime / 60000);
-      const seconds = Math.floor((remainingTime % 60000) / 1000);
-      timerEl.textContent = `Attendre: ${minutes}:${seconds
-        .toString()
-        .padStart(2, "0")}`;
-      timerEl.className = "timer";
-      drawBtn.disabled = true;
-    }
- 
+    const minutes = Math.floor(remainingTime / 60000);
+    const seconds = Math.floor((remainingTime % 60000) / 1000);
+    timerEl.textContent = `Attendre: ${minutes}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+    timerEl.className = "timer";
+    drawBtn.disabled = true;
+  }
+
 
   updateTrainersList(trainers) {
     const trainersListEl = document.getElementById("trainersList");
@@ -152,16 +152,13 @@ class GameView {
       trainerEl.className = "trainer-card";
       trainerEl.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <img src="${trainer.avatar}" alt="${
-        trainer.name
-      }" style="width: 40px; height: 40px; border-radius: 50%;">
+                    <img src="${trainer.avatar}" alt="${trainer.name
+        }" style="width: 40px; height: 40px; border-radius: 50%;">
                     <div style="flex: 1;">
-                        <div><strong>${trainer.name}</strong> ${
-        trainer.online ? "🟢" : "🔴"
-      }</div>
-                        <div>⭐ ${trainer.rating} | ⚔️ ${
-        trainer.battles
-      } combats</div>
+                        <div><strong>${trainer.name}</strong> ${trainer.online ? "🟢" : "🔴"
+        }</div>
+                        <div>⭐ ${trainer.rating} | ⚔️ ${trainer.battles
+        } combats</div>
                     </div>
                     <div>
                         <button class="btn-battle" onclick="event.stopPropagation(); window.app.startBattle('${trainer.name}')">
@@ -170,15 +167,15 @@ class GameView {
                     </div>
                 </div>
             `;
-      
+
       // Clic sur la carte du dresseur lance aussi le combat
       trainerEl.addEventListener("click", () => {
         window.app.startBattle(trainer.name);
       });
-      
+
       trainersListEl.appendChild(trainerEl);
     });
-}
+  }
   createCardElement(card, location) {
     const cardEl = document.createElement("div");
     cardEl.className = `card ${card.getTypeClass()}`;
@@ -194,11 +191,10 @@ class GameView {
     } else {
       cardEl.innerHTML = `
             <div class="card-info">
-                ${
-                  card.image
-                    ? `<img src="${card.image}" alt="${card.name}" class="card-image full-cover">`
-                    : ""
-                }
+                ${card.image
+          ? `<img src="${card.image}" alt="${card.name}" class="card-image full-cover">`
+          : ""
+        }
             </div>
         `;
     }
@@ -240,11 +236,10 @@ class GameView {
     const cardDetail = document.getElementById("cardDetail");
 
     cardDetail.innerHTML = `
-                ${
-                  card.image
-                    ? `<img src="${card.image}" alt="${card.name}" style="max-width: 800px;max-height: 800px;min-width:600px;min-height:600px;">`
-                    : ""
-                }
+                ${card.image
+        ? `<img src="${card.image}" alt="${card.name}" style="max-width: 800px;max-height: 800px;min-width:600px;min-height:600px;">`
+        : ""
+      }
         `;
 
     modal.style.display = "block";
@@ -347,11 +342,10 @@ class GameView {
 
       cardEl.innerHTML = `
           <div class="battle-card-content">
-              ${
-                card.image
-                  ? `<img src="${card.image}" alt="${card.name}" class="battle-card-image">`
-                  : `<div class="battle-card-placeholder">${card.name}</div>`
-              }
+              ${card.image
+          ? `<img src="${card.image}" alt="${card.name}" class="battle-card-image">`
+          : `<div class="battle-card-placeholder">${card.name}</div>`
+        }
               <div class="battle-card-info">
                   <div class="battle-card-name">${card.name}</div>
                   <div class="battle-card-stats">
@@ -370,23 +364,23 @@ class GameView {
     });
   }
 
-selectBattleCard(card, cardElement) {
-  // Enlever la sélection précédente
-  document.querySelectorAll('.battle-hand-card').forEach(el => {
+  selectBattleCard(card, cardElement) {
+    // Enlever la sélection précédente
+    document.querySelectorAll('.battle-hand-card').forEach(el => {
       el.classList.remove('selected');
-  });
-  
-  // Sélectionner la nouvelle carte
-  cardElement.classList.add('selected');
-  
-  // Afficher la carte dans la zone active du joueur
-  const playerActiveEl = document.getElementById('playerActiveCard');
-  playerActiveEl.innerHTML = `
+    });
+
+    // Sélectionner la nouvelle carte
+    cardElement.classList.add('selected');
+
+    // Afficher la carte dans la zone active du joueur
+    const playerActiveEl = document.getElementById('playerActiveCard');
+    playerActiveEl.innerHTML = `
       <div class="battle-active-card ${card.getTypeClass()}">
-          ${card.image ? 
-              `<img src="${card.image}" alt="${card.name}" class="active-card-image">` : 
-              `<div class="active-card-placeholder">${card.name}</div>`
-          }
+          ${card.image ?
+        `<img src="${card.image}" alt="${card.name}" class="active-card-image">` :
+        `<div class="active-card-placeholder">${card.name}</div>`
+      }
           <div class="active-card-info">
               <div class="active-card-name">${card.name}</div>
               <div class="active-card-stats">
@@ -396,18 +390,18 @@ selectBattleCard(card, cardElement) {
           </div>
       </div>
   `;
-  
-  // Activer le bouton d'attaque
-  const attackBtn = document.getElementById('attackBtn');
-  if (attackBtn) {
+
+    // Activer le bouton d'attaque
+    const attackBtn = document.getElementById('attackBtn');
+    if (attackBtn) {
       attackBtn.disabled = false;
-  }
-  
-  // Sauvegarder la carte sélectionnée
-  if (window.app) {
+    }
+
+    // Sauvegarder la carte sélectionnée
+    if (window.app) {
       window.app.selectedBattleCard = card;
+    }
   }
-}
 }
 
 export default GameView;

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokemon TCG - Architecture MVC</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
+
 <body>
     <div class="header">
         <div class="logo">⚡ Pokemon TCG Pro ⚡</div>
@@ -90,7 +92,8 @@
             <h2 id="trainerModalTitle">Interaction avec le Dresseur</h2>
             <div class="comment-section">
                 <h4>Laisser un commentaire:</h4>
-                <textarea class="comment-input" id="commentInput" placeholder="Votre commentaire sur ce dresseur..."></textarea>
+                <textarea class="comment-input" id="commentInput"
+                    placeholder="Votre commentaire sur ce dresseur..."></textarea>
                 <h4>Note:</h4>
                 <div class="rating" id="rating">
                     <span class="star" data-rating="1">⭐</span>
@@ -104,27 +107,28 @@
         </div>
     </div>
 
-  <!-- Scripts MVC -->
-<!-- Ajoutez type="module" à TOUS les scripts -->
-<script type="module" src="models/CardModel.js"></script>
-<script type="module" src="models/TrainerModel.js"></script>
-<script type="module" src="models/GameStateModel.js"></script>
-<script type="module" src="views/GameView.js"></script>
-<script type="module" src="controllers/GameController.js"></script>
+    <!-- Scripts MVC -->
+    <!-- Ajoutez type="module" à TOUS les scripts -->
+    <script type="module" src="models/CardModel.js"></script>
+    <script type="module" src="models/TrainerModel.js"></script>
+    <script type="module" src="models/GameStateModel.js"></script>
+    <script type="module" src="views/GameView.js"></script>
+    <script type="module" src="controllers/GameController.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@tcgdex/sdk@2/dist/tcgdex.browser.js"></script>
-  <script type="module">
-    import GameController from './controllers/GameController.js';
-    // Instancier le SDK
-    const tcgdex = new TCGdex('fr');
-    
+    <script src="https://cdn.jsdelivr.net/npm/@tcgdex/sdk@2/dist/tcgdex.browser.js"></script>
+    <script type="module">
+        import GameController from './controllers/GameController.js';
+        // Instancier le SDK
+        const tcgdex = new TCGdex('fr');
 
-      // Initialisation au chargement de la page
-      document.addEventListener('DOMContentLoaded', () => {
-          const app = new GameController(tcgdex);
-          window.app = app;
 
-      });
-  </script>
+        // Initialisation au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new GameController(tcgdex);
+            window.app = app;
+
+        });
+    </script>
 </body>
+
 </html>
