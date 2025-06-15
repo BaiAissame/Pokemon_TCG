@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script type="module" src="models/CardModel.js" defer></script>
+    <script type="module" src="models/TrainerModel.js" defer></script>
+    <script type="module" src="models/GameStateModel.js" defer></script>
+    <script type="module" src="views/BattleViews.js" defer></script>
+    <script type="module" src="controllers/BattleController.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tcgdex/sdk@2/dist/tcgdex.browser.js" defer></script>
+    <script type="module" defer>
+        import BattleController from './controllers/BattleController.js';
+        // Instancier le SDK
+        const tcgdex = new TCGdex('fr');
+        // Initialisation au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new BattleController(tcgdex);
+            window.app = app;
+        });
+    </script>
+
+    <title>Battle</title>
+</head>
+
+<body>
+    <nav class="header">
+        <div class="logo">⚡ Pokemon TCG Pro ⚡</div>
+        <div class="player-info">
+            <div class="trainer-name">Dresseur: <span id="trainerName">Ash Ketchup</span></div>
+            <div>💰 Crédits: <span id="credits">100</span></div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="game-area">
+
+            <div class="deck-section" style="margin-top: 1rem;">
+                <div class="deck">
+                    <h3>🎴 Ma Pioche (<span id="deckCount">0</span>)</h3>
+                    <div class="cards-container" id="deck"></div>
+                </div>
+
+                <div class="deck">
+                    <h3>🃏 Ma Main
+                        (<span id="handCount">0</span>)
+                    </h3>
+                    <div class="cards-container" id="hand"></div>
+                </div>
+            </div>
+
+        </div>
+        <div class="sidebar">
+            <div class="action-panel">
+                <h3>🎯 Actions</h3>
+                <div id="drawTimer" class="timer">Prêt à tirer!</div>
+                <button class="btn" id="drawBtn" onclick="app.drawCards()">
+                    🎴 Tirer un Booster (5 cartes)
+                </button>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    Ouverture du booster...
+                </div>
+                <div id="message"></div>
+            </div>
+
+            <div class="action-panel">
+                <h3>📊 Statistiques</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalCards">0</div>
+                        <div class="stat-label">Cartes totales</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="rareCards">0</div>
+                        <div class="stat-label">Cartes rares</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="boosters">0</div>
+                        <div class="stat-label">Boosters ouverts</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="battles">0</div>
+                        <div class="stat-label">Combats</div>
+                    </div>
+                </div>
+                <p><strong>Dernière session:</strong> <span id="lastDraw">Jamais</span></p>
+            </div>
+        </div>
+        <!-- Modal for card details -->
+        <div id="cardModal" class="modal">
+            <div class="modal-content" style="display: flex;flex-direction: column;align-items: center;">
+                <button class="close-btn" onclick="app.closeModal()">&times;</button>
+                <div class="card-detail" id="cardDetail"></div>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>
