@@ -1,10 +1,16 @@
 export default class PokemonAPIService {
     constructor(tcgdx) {
-        // Initialisation du SDK TCGdx 
+        // Initialisation du SDK TCGdx
         this.tcgdx = tcgdx;
         this.cache = new Map();
         this.availableSets = [];
-        this.availableSeries = [];
+        const attackNames = [
+            'Charge', 'Éclair', 'Flamme', 'Hydrocanon', 'Vibraqua', 'Tranch\'Herbe', 'Psyko', 'Poing-Karaté',
+            'Griffe', 'Morsure', 'Onde Folie', 'Laser Glace', 'Draco-Rage', 'Croc Fatal', 'Boule Elek',
+            'Jet de Sable', 'Combo-Griffe', 'Coud\'Boue', 'Vive-Attaque', 'Tornade', 'Bélier', 'Coud\'Krâne',
+            'Coud\'Jarnac', 'Coup Bas', 'Coup d\'Main', 'Fracas', 'Uppercut', 'Rafale', 'Tempête', 'Blizzard',
+            'Tonnerre', 'Séisme', 'Explosion', 'Météore', 'Nova', 'Tsunami', 'Cyclone', 'Avalanche'
+        ];this.availableSeries = [];
         this.initData();
     }
 
@@ -18,9 +24,7 @@ export default class PokemonAPIService {
             this.availableSets = [];
             this.availableSeries = [];
         }
-    }
-
-    async getRandomCards(count = 5) {
+    }    async getRandomCards(count = 5) {
         try {
             // Méthode 1: Récupérer des cartes d'un set aléatoire
             if (this.availableSets.length > 0) {
@@ -65,10 +69,9 @@ export default class PokemonAPIService {
                 const randomIndex = Math.floor(Math.random() * availableCards.length);
                 const card = availableCards[randomIndex];
 
-                selectedCards.push({
-                    ...card,
-                    id: `${card.id}-${Date.now()}-${i}` // ID unique
-                });
+                // Améliorer les cartes de l'API qui n'ont pas d'attaques
+                const improvedCard = this.improveApiCard(card, i);
+                selectedCards.push(improvedCard);
 
                 // Éviter les doublons
                 availableCards.splice(randomIndex, 1);
@@ -98,10 +101,9 @@ export default class PokemonAPIService {
                 const randomIndex = Math.floor(Math.random() * cards.length);
                 const card = cards[randomIndex];
 
-                selectedCards.push({
-                    ...card,
-                    id: `${card.id}-${Date.now()}-${i}`
-                });
+                // Améliorer les cartes de l'API qui n'ont pas d'attaques
+                const improvedCard = this.improveApiCard(card, i);
+                selectedCards.push(improvedCard);
             }
 
             return selectedCards;
@@ -210,6 +212,10 @@ export default class PokemonAPIService {
             { name: 'Neo Genesis', id: 'neogenesis' }
         ];
 
+        const attackNames = [
+            'Charge', 'Éclair', 'Flamme', 'Hydrocanon', 'Vibraqua', 'Tranch’Herbe', 'Psyko', 'Poing-Karaté', 'Griffe', 'Morsure', 'Onde Folie', 'Laser Glace', 'Draco-Rage', 'Croc Fatal', 'Boule Elek', 'Jet de Sable', 'Combo-Griffe', 'Coud’Boue', 'Vive-Attaque', 'Tornade', 'Bélier', 'Coup d’Boule', 'Coud’Krâne', 'Coup Double', 'Coud’Jarnac', 'Coup Bas', 'Coup d’Main', 'Coup d’Boule', 'Coup d’Boule', 'Coup d’Boule', 'Coup d’Boule'
+        ];
+
         const cards = [];
         for (let i = 0; i < count; i++) {
             const name = pokemonNames[Math.floor(Math.random() * pokemonNames.length)];
@@ -218,19 +224,30 @@ export default class PokemonAPIService {
             const set = sets[Math.floor(Math.random() * sets.length)];
 
             const hp = Math.floor(Math.random() * 200) + 50;
-            const attackPower = Math.floor(Math.random() * 100) + 20;
+            // Générer exactement 4 attaques différentes, sans doublons
+            const nbAttacks = 4;
+            const shuffledAttackNames = [...attackNames].sort(() => Math.random() - 0.5); // Mélanger
+            const attacks = [];
 
+            for (let j = 0; j < nbAttacks && j < shuffledAttackNames.length; j++) {
+                const attackName = shuffledAttackNames[j];
+                const attackDmg = Math.floor(Math.random() * 80) + 10;
+                // Ajoute un coût aléatoire (1 à 2 types)
+                const cost = [type];
+                if (Math.random() > 0.6) cost.push(types[Math.floor(Math.random() * types.length)]);
+                attacks.push({
+                    name: attackName,
+                    damage: attackDmg,
+                    cost,
+                    text: `${name} utilise ${attackName} et inflige ${attackDmg} dégâts.`
+                });
+            }
             cards.push({
                 id: `fallback-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${i}`,
                 name,
                 types: [type],
                 hp,
-                attacks: [{
-                    name: 'Attaque Basique',
-                    damage: attackPower,
-                    cost: [type],
-                    text: `${name} attaque avec une puissance de ${attackPower}.`
-                }],
+                attacks,
                 weaknesses: Math.random() > 0.5 ? [{
                     type: types[Math.floor(Math.random() * types.length)],
                     value: '×2'
@@ -251,6 +268,60 @@ export default class PokemonAPIService {
         }
 
         return cards;
+    }
+
+    // Méthode pour améliorer les cartes de l'API qui manquent d'attaques
+    improveApiCard(card, index) {
+        const improvedCard = {
+            ...card,
+            id: `${card.id}-${Date.now()}-${index}`
+        };
+
+        // Si la carte n'a pas d'attaques, en générer
+        if (!improvedCard.attacks || improvedCard.attacks.length === 0) {
+
+            const attackNames = [
+                'Charge', 'Éclair', 'Flamme', 'Hydrocanon', 'Vibraqua', 'Tranch\'Herbe', 'Psyko', 'Poing-Karaté',
+                'Griffe', 'Morsure', 'Onde Folie', 'Laser Glace', 'Draco-Rage', 'Croc Fatal', 'Boule Elek',
+                'Jet de Sable', 'Combo-Griffe', 'Coud\'Boue', 'Vive-Attaque', 'Tornade', 'Bélier', 'Coud\'Krâne',
+                'Coud\'Jarnac', 'Coup Bas', 'Coup d\'Main', 'Fracas', 'Uppercut', 'Rafale', 'Tempête', 'Blizzard'
+            ];
+
+            const types = [
+                { name: 'Grass' }, { name: 'Fire' }, { name: 'Water' },
+                { name: 'Lightning' }, { name: 'Psychic' }, { name: 'Fighting' },
+                { name: 'Darkness' }, { name: 'Metal' }, { name: 'Fairy' },
+                { name: 'Dragon' }, { name: 'Colorless' }
+            ];
+
+            // Prendre le type de la carte ou un type aléatoire
+            const cardType = (improvedCard.types && improvedCard.types.length > 0)
+                ? improvedCard.types[0]
+                : types[Math.floor(Math.random() * types.length)];
+
+            // Générer 2-4 attaques uniques
+            const nbAttacks = 2 + Math.floor(Math.random() * 3); // 2 à 4 attaques
+            const shuffledAttackNames = [...attackNames].sort(() => Math.random() - 0.5);
+            const attacks = [];
+
+            for (let j = 0; j < nbAttacks && j < shuffledAttackNames.length; j++) {
+                const attackName = shuffledAttackNames[j];
+                const attackDmg = Math.floor(Math.random() * 80) + 10;
+                const cost = [cardType];
+                if (Math.random() > 0.6) cost.push(types[Math.floor(Math.random() * types.length)]);
+
+                attacks.push({
+                    name: attackName,
+                    damage: attackDmg,
+                    cost,
+                    text: `${improvedCard.name} utilise ${attackName} et inflige ${attackDmg} dégâts.`
+                });
+            }
+
+            improvedCard.attacks = attacks;
+        }
+
+        return improvedCard;
     }
 
     // Méthodes utilitaires avec les vraies méthodes du SDK
