@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon TCG - Ma Collection</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+    <div class="header">
+        <div class="logo">⚡ Pokemon TCG Pro ⚡</div>
+        <div class="player-info">
+            <div class="trainer-name">Dresseur: <span id="trainerName">Ash Ketchup</span></div>
+            <div>💰 Crédits: <span id="credits">100</span></div>
+        </div>
+    </div>
+
+    <nav class="main-nav">
+        <a href="index.html" class="nav-link">🏠 Accueil</a>
+        <a href="battle.html" class="nav-link">⚔️ Combat</a>
+        <a href="collection.html" class="nav-link active">📚 Collection</a>
+    </nav>
+
+    <div class="collection-container">
+        <div id="collectionContainer">
+            <!-- Le contenu de la collection sera généré ici -->
+            <div class="loading-collection">
+                <div class="spinner"></div>
+                <p>Chargement de votre collection...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour les détails des cartes -->
+    <div id="cardModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="window.collectionApp.closeModal()">&times;</button>
+            <div class="card-detail" id="cardDetail"></div>
+        </div>
+    </div>
+
+    <!-- Modal pour les statistiques -->
+    <div id="statsModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="this.closest('.modal').style.display='none'">&times;</button>
+            <h2>📊 Statistiques de Collection</h2>
+            <div id="statsContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal pour le constructeur de deck -->
+    <div id="deckBuilderModal" class="modal">
+        <div class="modal-content deck-builder-content">
+            <button class="close-btn" onclick="this.closest('.modal').style.display='none'">&times;</button>
+            <h2>🏗️ Constructeur de Deck</h2>
+            <div class="deck-builder-container">
+                <div class="deck-builder-sidebar">
+                    <h3>Deck Actuel</h3>
+                    <div id="currentDeck" class="deck-preview">
+                        <!-- Cartes du deck actuel -->
+                    </div>
+                    <div class="deck-stats">
+                        <div class="deck-stat">
+                            <span>Cartes: </span>
+                            <span id="deckCardCount">0</span>
+                        </div>
+                        <div class="deck-stat">
+                            <span>Types: </span>
+                            <span id="deckTypeCount">0</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-success" id="saveDeckBtn">💾 Sauvegarder le Deck</button>
+                    <button class="btn btn-danger" id="clearDeckBtn">🗑️ Vider le Deck</button>
+                </div>
+                <div class="deck-builder-main">
+                    <div class="deck-builder-filters">
+                        <input type="text" id="deckBuilderSearch" placeholder="🔍 Rechercher..." class="search-input">
+                        <select id="deckBuilderTypeFilter" class="filter-select">
+                            <option value="">Tous les types</option>
+                        </select>
+                        <select id="deckBuilderRarityFilter" class="filter-select">
+                            <option value="">Toutes les raretés</option>
+                            <option value="Common">Commune</option>
+                            <option value="Uncommon">Peu commune</option>
+                            <option value="Rare">Rare</option>
+                            <option value="Ultra Rare">Ultra Rare</option>
+                            <option value="Secret Rare">Secret Rare</option>
+                        </select>
+                    </div>
+                    <div id="deckBuilderCards" class="deck-builder-cards">
+                        <!-- Cartes disponibles pour le deck -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour l'export/import -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="this.closest('.modal').style.display='none'">&times;</button>
+            <h2>📤 Exporter/Importer Collection</h2>
+            <div class="export-import-container">
+                <div class="export-section">
+                    <h3>Exporter</h3>
+                    <p>Exportez votre collection pour la sauvegarder ou la partager.</p>
+                    <button class="btn btn-primary" id="exportBtn">📤 Exporter ma Collection</button>
+                    <textarea id="exportData" class="export-textarea" readonly placeholder="Les données d'export apparaîtront ici..."></textarea>
+                </div>
+                <div class="import-section">
+                    <h3>Importer</h3>
+                    <p>Importez une collection depuis des données d'export.</p>
+                    <textarea id="importData" class="export-textarea" placeholder="Collez les données d'import ici..."></textarea>
+                    <button class="btn btn-success" id="importBtn">📥 Importer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="models/CardModel.js"></script>
+    <script type="module" src="models/TrainerModel.js"></script>
+    <script type="module" src="models/GameStateModel.js"></script>
+    <script type="module" src="controllers/CollectionController.js"></script>
+    <script type="module" src="views/CollectionView.js"></script>
+    <script type="module" src="service/SoundService.js"></script>
+    <script src="test-collection-data.js"></script>
+
+    <script type="module">
+        import GameStateModel from './models/GameStateModel.js';
+        import CollectionController from './controllers/CollectionController.js';
+        import CollectionView from './views/CollectionView.js';
+        import SoundService from './service/SoundService.js';
+
+        class CollectionApp {
+            constructor() {
+                this.gameState = new GameStateModel();
+                this.controller = new CollectionController(this.gameState);
+                this.view = new CollectionView();
+                this.soundService = new SoundService();
+
+                // Lier la vue et le contrôleur
+                this.view.setController(this.controller);
+                this.controller.setView(this.view);
+
+                this.init();
+            }
+
+            async init() {
+                this.gameState.load();
+                this.updatePlayerInfo();
+                this.refreshCollection();
+                this.attachGlobalEventListeners();
+
+                console.log('Collection App initialisée');
+            }
+
+            updatePlayerInfo() {
+                document.getElementById('trainerName').textContent = 'Ash Ketchup';
+                document.getElementById('credits').textContent = this.gameState.credits || 100;
+            }
+
+            refreshCollection() {
+                const cards = this.controller.searchCards();
+                const stats = this.controller.getCollectionStats();
+                const filters = this.controller.currentFilters;
+                filters.searchQuery = this.controller.currentSearchQuery;
+
+                this.view.renderCollection(cards, stats, filters);
+            }
+
+            attachGlobalEventListeners() {
+                this.controller.onViewUpdate = () => this.refreshCollection();
+                this.controller.onCardAdded = (card) => {
+                    this.view.showMessage(`Carte "${card.name}" ajoutée au deck!`, 'success');
+                    this.soundService.playSound('cardPlay');
+                };
+                this.controller.onCardRemoved = (card) => {
+                    this.view.showMessage(`Carte "${card.name}" supprimée de la collection`, 'info');
+                };
+                this.controller.onFavoriteToggled = (card, favorited) => {
+                    const message = favorited ?
+                        `"${card.name}" ajoutée aux favoris ❤️` :
+                        `"${card.name}" retirée des favoris 💔`;
+                    this.view.showMessage(message, 'info');
+                };
+
+                // Événements des boutons d'action
+                document.addEventListener('click', (e) => {
+                    if (e.target.id === 'deckBuilderBtn') {
+                        this.openDeckBuilder();
+                    } else if (e.target.id === 'collectionStatsBtn') {
+                        this.showDetailedStats();
+                    } else if (e.target.id === 'exportCollectionBtn') {
+                        this.openExportModal();
+                    } else if (e.target.id === 'addTestCardsBtn') {
+                        this.addTestCards();
+                    }
+                });
+            }
+
+            openDeckBuilder() {
+                const modal = document.getElementById('deckBuilderModal');
+                modal.style.display = 'block';
+                this.loadDeckBuilder();
+            }
+
+            loadDeckBuilder() {
+                const currentDeck = document.getElementById('currentDeck');
+                const deckBuilderCards = document.getElementById('deckBuilderCards');
+
+                currentDeck.innerHTML = this.gameState.deck.map(card => `
+                    <div class="deck-card-item">
+                        <img src="${card.image}" alt="${card.name}" class="deck-card-thumb">
+                        <span class="deck-card-name">${card.name}</span>
+                        <button class="btn-icon remove-from-deck" data-card-id="${card.id}">❌</button>
+                    </div>
+                `).join('');
+
+                const availableCards = this.controller.searchCards();
+                deckBuilderCards.innerHTML = availableCards.map(card => `
+                    <div class="deck-builder-card" data-card-id="${card.id}">
+                        <img src="${card.image}" alt="${card.name}" class="builder-card-image">
+                        <div class="builder-card-info">
+                            <div class="builder-card-name">${card.name}</div>
+                            <div class="builder-card-type">${card.types?.[0]?.name || 'Unknown'}</div>
+                        </div>
+                        <button class="btn btn-small btn-primary add-to-deck-builder" data-card-id="${card.id}">➕</button>
+                    </div>
+                `).join('');
+
+                this.updateDeckStats();
+                this.attachDeckBuilderEvents();
+            }
+
+            updateDeckStats() {
+                const deckCount = this.gameState.deck.length;
+                const uniqueTypes = new Set(this.gameState.deck
+                    .filter(card => card.types && card.types.length > 0)
+                    .map(card => card.types[0].name)).size;
+
+                document.getElementById('deckCardCount').textContent = deckCount;
+                document.getElementById('deckTypeCount').textContent = uniqueTypes;
+            }
+
+            attachDeckBuilderEvents() {
+                document.querySelectorAll('.add-to-deck-builder').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const cardId = e.target.dataset.cardId;
+                        if (this.controller.addCardToDeck(cardId)) {
+                            this.loadDeckBuilder(); // Recharger l'affichage
+                            this.view.showMessage('Carte ajoutée au deck!', 'success');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.remove-from-deck').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const cardId = e.target.dataset.cardId;
+                        const cardIndex = this.gameState.deck.findIndex(card => card.id === cardId);
+                        if (cardIndex !== -1) {
+                            this.gameState.deck.splice(cardIndex, 1);
+                            this.gameState.save();
+                            this.loadDeckBuilder();
+                            this.view.showMessage('Carte retirée du deck', 'info');
+                        }
+                    });
+                });
+
+                document.getElementById('saveDeckBtn').addEventListener('click', () => {
+                    this.gameState.save();
+                    this.view.showMessage('Deck sauvegardé!', 'success');
+                });
+
+                document.getElementById('clearDeckBtn').addEventListener('click', () => {
+                    if (confirm('Voulez-vous vraiment vider votre deck ?')) {
+                        this.gameState.deck = [];
+                        this.gameState.save();
+                        this.loadDeckBuilder();
+                        this.view.showMessage('Deck vidé', 'info');
+                    }
+                });
+            }
+
+            showDetailedStats() {
+                const stats = this.controller.getCollectionStats();
+                this.view.showStats(stats);
+            }
+
+            openExportModal() {
+                const modal = document.getElementById('exportModal');
+                modal.style.display = 'block';
+
+                document.getElementById('exportBtn').addEventListener('click', () => {
+                    const exportData = this.controller.exportCollection();
+                    document.getElementById('exportData').value = JSON.stringify(exportData, null, 2);
+                    this.view.showMessage('Collection exportée!', 'success');
+                });
+
+                document.getElementById('importBtn').addEventListener('click', () => {
+                    try {
+                        const importData = JSON.parse(document.getElementById('importData').value);
+                        this.controller.importCollection(importData);
+                        this.refreshCollection();
+                        modal.style.display = 'none';
+                        this.view.showMessage('Collection importée avec succès!', 'success');
+                    } catch (error) {
+                        this.view.showMessage('Erreur lors de l\'import: ' + error.message, 'error');
+                    }
+                });
+            }
+
+            closeModal() {
+                document.getElementById('cardModal').style.display = 'none';
+            }
+
+            navigateToGame() {
+                window.location.href = 'index.html';
+            }
+
+            navigateToBattle() {
+                window.location.href = 'battle.html';
+            }
+
+            addTestCards() {
+                if (typeof window.addTestCardsToCollection === 'function') {
+                    if (window.addTestCardsToCollection()) {
+                        this.gameState.load();
+                        this.refreshCollection();
+                        this.updatePlayerInfo();
+                        this.view.showMessage('🧪 Cartes de test ajoutées à votre collection!', 'success');
+                    } else {
+                        this.view.showMessage('❌ Erreur lors de l\'ajout des cartes de test', 'error');
+                    }
+                } else {
+                    this.view.showMessage('❌ Script de test non disponible', 'error');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.collectionApp = new CollectionApp();
+        });
+    </script>
+</body>
+
+</html>
