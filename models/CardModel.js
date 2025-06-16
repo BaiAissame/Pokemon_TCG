@@ -3,21 +3,28 @@ class CardModel {
   constructor(data) {
     this.id = data.id;
     this.name = data.name;
-    this.image = (data.image && !data.image.endsWith('.webp')) ? data.image + '/high.webp' : data.image || '';
+    this.image = data.images?.large || data.images?.small || data.image || '';
     this.types = data.types || [];
     this.hp = parseInt(data.hp) || 100;
     this.attacks = data.attacks || [];
     this.weaknesses = data.weaknesses || [];
     this.resistances = data.resistances || [];
-    this.rarity = data.rarity;
+    this.rarity = data.rarity ? { name: data.rarity } : null;
     this.set = data.set;
     this.artist = data.artist;
     this.retreatCost = data.retreatCost || [];
+    this.supertype = data.supertype;
+    this.subtypes = data.subtypes || [];
   }
 
   getTypeClass() {
     if (this.types && this.types.length > 0) {
-      return this.types[0].name.toLowerCase();
+      const firstType = this.types[0];
+      if (typeof firstType === 'string') {
+        return firstType.toLowerCase();
+      } else if (firstType && firstType.name) {
+        return firstType.name.toLowerCase();
+      }
     }
     return "colorless";
   }
@@ -25,9 +32,30 @@ class CardModel {
   isRare() {
     return (
       this.rarity &&
-      (this.rarity.name === "Rare" ||
-        this.rarity.name === "Ultra Rare" ||
-        this.rarity.name === "Secret Rare")
+      (this.rarity === "Rare" ||
+        this.rarity === "Ultra Rare" ||
+        this.rarity === "Secret Rare" ||
+        this.rarity === "Rare Holo" ||
+        this.rarity === "Rare Holo EX" ||
+        this.rarity === "Rare Holo GX" ||
+        this.rarity === "Rare Holo V" ||
+        this.rarity === "Rare Holo VMAX" ||
+        this.rarity === "Double Rare" ||
+        this.rarity === "Rare Ultra" ||
+        this.rarity === "Rare Secret" ||
+        (this.rarity.name && (
+          this.rarity.name === "Rare" ||
+          this.rarity.name === "Ultra Rare" ||
+          this.rarity.name === "Secret Rare" ||
+          this.rarity.name === "Rare Holo" ||
+          this.rarity.name === "Rare Holo EX" ||
+          this.rarity.name === "Rare Holo GX" ||
+          this.rarity.name === "Rare Holo V" ||
+          this.rarity.name === "Rare Holo VMAX" ||
+          this.rarity.name === "Double Rare" ||
+          this.rarity.name === "Rare Ultra" ||
+          this.rarity.name === "Rare Secret"
+        )))
     );
   }
 
@@ -45,7 +73,6 @@ class CardModel {
         .map((attack) => {
           if (typeof attack.damage === 'number') return attack.damage;
           if (typeof attack.damage === 'string') {
-            // Certains formats sont "30+", "20x", "10", ""
             const match = attack.damage.match(/\d+/);
             return match ? parseInt(match[0]) : 0;
           }

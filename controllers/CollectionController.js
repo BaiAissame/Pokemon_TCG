@@ -21,6 +21,9 @@ export default class CollectionController {
 
     setView(view) {
         this.view = view;
+        if (view && this.gameState) {
+            this.gameState.addObserver(view);
+        }
     }
 
     refreshView() {
@@ -29,7 +32,6 @@ export default class CollectionController {
         }
     }
 
-    // Méthodes de recherche et filtrage
     searchCards(query = '') {
         this.currentSearchQuery = query;
         return this.gameState.searchCollection(query, this.currentFilters);
@@ -53,7 +55,6 @@ export default class CollectionController {
         return this.gameState.collection;
     }
 
-    // Méthodes de gestion des cartes
     addCardToDeck(cardId) {
         const success = this.gameState.addCardFromCollectionToDeck(cardId);
         if (success && this.onCardAdded) {
@@ -100,12 +101,10 @@ export default class CollectionController {
     showCardDetails(cardId) {
         const card = this.gameState.collection.find(c => c.id === cardId);
         if (card && this.view) {
-            // Utiliser la même méthode que BattleViews pour l'affichage
             this.view.showCardDetails(card);
         }
     }
 
-    // Méthodes utilitaires
     getCollectionStats() {
         return this.gameState.getCollectionStats();
     }
@@ -130,7 +129,6 @@ export default class CollectionController {
         return Array.from(rarities).sort();
     }
 
-    // Méthodes pour construire des decks
     createDeckFromCollection(cardIds, deckName = 'Mon Deck') {
         const selectedCards = cardIds.map(id =>
             this.gameState.collection.find(card => card.id === id)
@@ -140,11 +138,9 @@ export default class CollectionController {
             return false;
         }
 
-        // Ajouter les cartes au deck actuel
         selectedCards.forEach(card => {
             const deckCard = new CardModel(card);
             this.gameState.deck.push(deckCard);
-            // Mettre à jour les statistiques d'utilisation
             card.timesUsed = (card.timesUsed || 0) + 1;
         });
 
@@ -152,7 +148,6 @@ export default class CollectionController {
         return true;
     }
 
-    // Exporter/Importer la collection
     exportCollection() {
         return {
             version: '1.0',
@@ -167,7 +162,6 @@ export default class CollectionController {
             throw new Error('Format de données invalide');
         }
 
-        // Fusionner avec la collection existante
         data.collection.forEach(cardData => {
             const existingCard = this.gameState.collection.find(c => c.id === cardData.id);
             if (!existingCard) {
@@ -183,18 +177,15 @@ export default class CollectionController {
         return true;
     }
 
-    // Méthodes de tri avancé
     sortCollection(sortBy) {
         this.currentFilters.sortBy = sortBy;
         return this.searchCards(this.currentSearchQuery);
     }
 
-    // Obtenir des recommandations basées sur l'utilisation
     getRecommendations() {
         const stats = this.getCollectionStats();
         const recommendations = [];
 
-        // Cartes populaires non utilisées
         const unusedRares = this.gameState.collection.filter(card =>
             card.isRare() && (card.timesUsed || 0) === 0
         );
@@ -208,7 +199,6 @@ export default class CollectionController {
             });
         }
 
-        // Cartes favorites pour le deck
         const favorites = this.gameState.collection.filter(card => card.favorited);
         if (favorites.length > 0) {
             recommendations.push({

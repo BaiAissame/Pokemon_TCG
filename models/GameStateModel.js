@@ -6,7 +6,7 @@ class GameStateModel {
   constructor() {
     this.deck = [];
     this.hand = [];
-    this.collection = []; // Collection permanente de cartes
+    this.collection = [];
     this.lastDrawTime = null;
     this.trainers = [];
     this.selectedTrainer = null;
@@ -16,19 +16,11 @@ class GameStateModel {
     this.battles = 0;
     this.credits = 100;
     this.observers = [];
-    this.achievements = [];
-    this.settings = {
-      soundEnabled: true,
-      animationsEnabled: true,
-      difficulty: "normal",
-    };
     this.statistics = {
       totalWins: 0,
       totalLosses: 0,
       bestWinStreak: 0,
       currentWinStreak: 0,
-      favoriteCard: null,
-      totalDamageDealt: 0,
     };
   }
 
@@ -49,20 +41,16 @@ class GameStateModel {
     this.totalCards += cards.length;
     this.rareCards += cards.filter((card) => card.isRare()).length;
 
-    // Ajouter automatiquement à la collection
     this.addCardsToCollection(cards);
 
     this.save();
     this.notifyObservers("onCardsAdded", cards);
   }
 
-  // Méthodes pour gérer la collection
   addCardsToCollection(cards) {
     cards.forEach(card => {
-      // Vérifier si la carte n'existe pas déjà dans la collection
       const existingCard = this.collection.find(c => c.id === card.id);
       if (!existingCard) {
-        // Ajouter une copie à la collection avec metadata
         const collectionCard = {
           ...card,
           addedAt: new Date().toISOString(),
@@ -71,7 +59,6 @@ class GameStateModel {
         };
         this.collection.push(collectionCard);
       } else {
-        // Mettre à jour les métadonnées si la carte existe déjà
         existingCard.timesUsed = (existingCard.timesUsed || 0) + 1;
       }
     });
@@ -92,11 +79,8 @@ class GameStateModel {
   addCardFromCollectionToDeck(cardId) {
     const card = this.collection.find(c => c.id === cardId);
     if (card) {
-      // Créer une nouvelle instance pour le deck
       const deckCard = new CardModel(card);
       this.deck.push(deckCard);
-
-      // Mettre à jour les statistiques d'utilisation
       card.timesUsed = (card.timesUsed || 0) + 1;
 
       this.save();
@@ -136,14 +120,12 @@ class GameStateModel {
   searchCollection(query, filters = {}) {
     let results = [...this.collection];
 
-    // Recherche par nom
     if (query) {
       results = results.filter(card =>
         card.name.toLowerCase().includes(query.toLowerCase())
       );
     }
 
-    // Filtres
     if (filters.type) {
       results = results.filter(card =>
         card.types && card.types.some(t => t.name === filters.type)
@@ -160,7 +142,6 @@ class GameStateModel {
       results = results.filter(card => card.favorited === filters.favorited);
     }
 
-    // Tri
     if (filters.sortBy === 'name') {
       results.sort((a, b) => a.name.localeCompare(b.name));
     } else if (filters.sortBy === 'rarity') {
@@ -207,7 +188,7 @@ class GameStateModel {
     if (!this.lastDrawTime) return true;
     const now = Date.now();
     const timeSinceLastDraw = now - this.lastDrawTime;
-    return timeSinceLastDraw >= 5 * 60 * 1000; // 5 minutes
+    return timeSinceLastDraw >= 5 * 60 * 1000;
   }
 
   getRemainingTime() {
@@ -229,7 +210,7 @@ class GameStateModel {
     const dataToSave = {
       deck: this.deck,
       hand: this.hand,
-      collection: this.collection, // Sauvegarder la collection
+      collection: this.collection,
       lastDrawTime: this.lastDrawTime,
       trainers: this.trainers,
       totalCards: this.totalCards,
@@ -237,24 +218,14 @@ class GameStateModel {
       boosters: this.boosters,
       battles: this.battles,
       credits: this.credits,
-      // Nouvelles données à sauvegarder
-      achievements: this.achievements || [],
-      settings: this.settings || {
-        soundEnabled: true,
-        animationsEnabled: true,
-        difficulty: "normal",
-      },
       statistics: this.statistics || {
         totalWins: 0,
         totalLosses: 0,
         bestWinStreak: 0,
         currentWinStreak: 0,
-        favoriteCard: null,
-        totalDamageDealt: 0,
       },
     };
 
-    // Sauvegarde locale ET cloud (simulation)
     try {
       window.gameStateStorage = dataToSave;
       localStorage.setItem("pokemonTCG_gameState", JSON.stringify(dataToSave));
@@ -267,7 +238,6 @@ class GameStateModel {
   load() {
     let savedState = null;
 
-    // Essayer de charger depuis localStorage en premier
     try {
       const localData = localStorage.getItem("pokemonTCG_gameState");
       if (localData) {
@@ -277,7 +247,6 @@ class GameStateModel {
       console.warn("Erreur de chargement localStorage:", error);
     }
 
-    // Fallback vers la mémoire
     if (!savedState) {
       savedState = window.gameStateStorage;
     }
@@ -285,12 +254,10 @@ class GameStateModel {
     if (savedState) {
       Object.assign(this, savedState);
 
-      // Reconstituer les objets CardModel
       this.deck = (this.deck || []).map((cardData) => new CardModel(cardData));
       this.hand = (this.hand || []).map((cardData) => new CardModel(cardData));
       this.collection = (this.collection || []).map((cardData) => new CardModel(cardData));
 
-      // Gérer this.trainers qui peut être une chaîne JSON ou un tableau
       let trainersData = this.trainers;
       if (typeof trainersData === 'string') {
         try {
@@ -303,41 +270,17 @@ class GameStateModel {
       this.trainers = (trainersData || []).map(
         (trainerData) => new TrainerModel(trainerData)
       );
-
-      // Initialiser les nouvelles propriétés si elles n'existent pas
       this.collection = this.collection || [];
-      this.achievements = this.achievements || [];
-      this.settings = this.settings || {
-        soundEnabled: true,
-        animationsEnabled: true,
-        difficulty: "normal",
-      };
       this.statistics = this.statistics || {
         totalWins: 0,
         totalLosses: 0,
         bestWinStreak: 0,
         currentWinStreak: 0,
-        favoriteCard: null,
-        totalDamageDealt: 0,
       };
     }
     this.notifyObservers("onStateChange", this);
   }
 
-  // Système d'achievements
-  addAchievement(achievement) {
-    if (!this.achievements) this.achievements = [];
-    if (!this.achievements.find((a) => a.id === achievement.id)) {
-      this.achievements.push({
-        ...achievement,
-        unlockedAt: new Date().toISOString(),
-      });
-      this.save();
-      this.notifyObservers("onAchievementUnlocked", achievement);
-    }
-  }
-
-  // Statistiques
   updateStatistics(type, value) {
     if (!this.statistics) this.statistics = {};
     this.statistics[type] = (this.statistics[type] || 0) + value;

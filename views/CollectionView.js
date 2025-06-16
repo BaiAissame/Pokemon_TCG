@@ -1,12 +1,11 @@
 // views/CollectionView.js
 export default class CollectionView {
     constructor() {
-        this.currentView = 'grid'; // 'grid' ou 'list'
+        this.currentView = 'grid';
         this.selectedCards = new Set();
         this.isSelectionMode = false;
     }
 
-    // Méthode principale pour afficher la collection
     renderCollection(cards, stats, filters) {
         const container = document.getElementById('collectionContainer');
         if (!container) return;
@@ -257,9 +256,7 @@ export default class CollectionView {
         `;
     }
 
-    // Méthodes de gestion des événements
     attachEventListeners() {
-        // Recherche
         const searchInput = document.getElementById('collectionSearch');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
@@ -267,7 +264,6 @@ export default class CollectionView {
             });
         }
 
-        // Filtres
         ['typeFilter', 'rarityFilter', 'favoritedFilter', 'sortFilter'].forEach(filterId => {
             const element = document.getElementById(filterId);
             if (element) {
@@ -277,12 +273,10 @@ export default class CollectionView {
             }
         });
 
-        // Boutons de vue
         document.getElementById('gridViewBtn')?.addEventListener('click', () => this.changeView('grid'));
         document.getElementById('listViewBtn')?.addEventListener('click', () => this.changeView('list'));
         document.getElementById('selectModeBtn')?.addEventListener('click', () => this.toggleSelectionMode());
 
-        // Actions sur les cartes
         document.querySelectorAll('.favorite-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -304,7 +298,6 @@ export default class CollectionView {
             });
         });
 
-        // Sélection de cartes
         if (this.isSelectionMode) {
             document.querySelectorAll('.collection-card, .collection-list-item').forEach(card => {
                 card.addEventListener('click', (e) => {
@@ -315,14 +308,12 @@ export default class CollectionView {
             });
         }
 
-        // Toolbar de sélection
         document.getElementById('addSelectedToDeckBtn')?.addEventListener('click', () => this.onAddSelectedToDeck());
         document.getElementById('favoriteSelectedBtn')?.addEventListener('click', () => this.onFavoriteSelected());
         document.getElementById('removeSelectedBtn')?.addEventListener('click', () => this.onRemoveSelected());
         document.getElementById('clearSelectionBtn')?.addEventListener('click', () => this.clearSelection());
     }
 
-    // Méthodes d'événements (à implémenter dans le contrôleur)
     onSearch(query) {
         if (this.controller) {
             this.controller.searchCards(query);
@@ -353,7 +344,6 @@ export default class CollectionView {
 
         if (!modal || !cardDetail) return;
 
-        // Utiliser le même format que BattleViews pour la cohérence
         cardDetail.innerHTML = `
             <div class="card-detail-container">
                 <div class="card-detail-image">
@@ -437,7 +427,6 @@ export default class CollectionView {
         }
     }
 
-    // Méthodes de sélection
     toggleSelectionMode() {
         this.isSelectionMode = !this.isSelectionMode;
         this.selectedCards.clear();
@@ -461,7 +450,6 @@ export default class CollectionView {
     }
 
     updateSelectionUI() {
-        // Mettre à jour l'apparence des cartes sélectionnées
         document.querySelectorAll('.collection-card, .collection-list-item').forEach(card => {
             const isSelected = this.selectedCards.has(card.dataset.cardId);
             card.classList.toggle('selected', isSelected);
@@ -472,7 +460,6 @@ export default class CollectionView {
             }
         });
 
-        // Mettre à jour la toolbar
         const toolbar = document.querySelector('.selection-toolbar');
         if (toolbar) {
             const info = toolbar.querySelector('.selection-info span');
@@ -518,9 +505,7 @@ export default class CollectionView {
         }
     }
 
-    // Méthodes utilitaires pour l'affichage
     showMessage(message, type = 'info') {
-        // Créer une notification temporaire
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
@@ -533,7 +518,6 @@ export default class CollectionView {
     }
 
     showStats(stats) {
-        // Afficher les statistiques détaillées dans une modal
         const modal = document.createElement('div');
         modal.className = 'modal';
         modal.innerHTML = `
@@ -581,8 +565,19 @@ export default class CollectionView {
         modal.style.display = 'block';
     }
 
-    // Méthode pour lier le contrôleur
     setController(controller) {
         this.controller = controller;
+    }
+
+    onCollectionUpdated(collection) {
+        if (this.controller && document.getElementById('collectionContainer')) {
+            this.controller.refreshView();
+        }
+    }
+
+    onStateChange(gameState) {
+        if (this.controller && document.getElementById('collectionContainer')) {
+            this.controller.refreshView();
+        }
     }
 }

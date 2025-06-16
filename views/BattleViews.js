@@ -6,7 +6,6 @@ export default class BattleViews {
 
 
     setupEventListeners() {
-        // Gestion des clics sur les étoiles
         document.querySelectorAll(".star").forEach((star) => {
             star.addEventListener("click", (e) => {
                 const rating = parseInt(e.target.dataset.rating);
@@ -14,7 +13,6 @@ export default class BattleViews {
             });
         });
 
-        // Fermeture des modales en cliquant à l'extérieur
         document.querySelectorAll(".modal").forEach((modal) => {
             modal.addEventListener("click", (e) => {
                 if (e.target === modal) {
@@ -23,7 +21,6 @@ export default class BattleViews {
             });
         });
     }
-
 
     setupDragAndDrop() {
         const containers = document.querySelectorAll(".cards-container");
@@ -84,15 +81,7 @@ export default class BattleViews {
         );
     }
 
-    onError(message) {
-        this.showMessage(message, "error");
-    }
 
-    onCardMoved(data) {
-        // Card moved notification (silent)
-    }
-
-    // Méthodes d'affichage
     updateDisplay(gameState) {
         this.updateDeck(gameState.deck);
         this.updateHand(gameState.hand);
@@ -123,12 +112,6 @@ export default class BattleViews {
             const cardEl = this.createCardElement(card, "hand");
             handEl.appendChild(cardEl);
         });
-
-        // pour n'affiche qu'une carte de la main
-        // if (hand.length > 0) {
-        //   const cardEl = this.createCardElement(hand[0], "hand");
-        //   handEl.appendChild(cardEl);
-        // }
     }
 
     updateStats(gameState) {
@@ -161,26 +144,32 @@ export default class BattleViews {
         cardEl.draggable = true;
         cardEl.dataset.cardId = card.id;
         cardEl.dataset.location = location;
-        if (location === "deck") {
-            cardEl.className = "card card-back";
+
+        if (location === 'deck') {
+            cardEl.classList.add('card-back');
             cardEl.innerHTML = `
-                <div>POKEMON</div>
-                <div>TCG</div>
+                <div class="card-back-content">
+                    <div class="card-back-pattern">🎴</div>
+                    <div class="card-back-text">POKEMON TCG</div>
+                </div>
             `;
-            // Permettre de voir le détail même pour la pioche
-            cardEl.addEventListener("click", () => window.app.showCardDetails(card));
         } else {
             cardEl.innerHTML = `
-            <div class="card-info">
-                ${card.image
-                    ? `<img src="${card.image}" alt="${card.name}" class="card-image full-cover">`
-                    : ""
-                }
-            </div>
-        `;
-            cardEl.addEventListener("click", () => window.app.showCardDetails(card));
+                <div class="card-info">
+                    ${card.image
+                        ? `<img src="${card.image}" alt="${card.name}" class="card-image full-cover" loading="lazy"
+                               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
+                        : ""
+                    }
+                    <div class="card-placeholder" style="${card.image ? 'display:none' : ''}">
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-type">${card.types?.[0]?.name || 'Unknown'}</div>
+                    </div>
+                </div>
+            `;
         }
 
+        cardEl.addEventListener("click", () => window.app.showCardDetails(card));
         cardEl.addEventListener("dragstart", this.handleDragStart.bind(this));
         cardEl.addEventListener("dragend", this.handleDragEnd.bind(this));
 
@@ -216,7 +205,6 @@ export default class BattleViews {
       const modal = document.getElementById("cardModal");
       const cardDetail = document.getElementById("cardDetail");
 
-      // Affichage détaillé optimisé pour éviter le scroll
       const attacksHtml = card.attacks && card.attacks.length > 0
         ? `<div style="margin-top: 1rem;">
              <h4 style="color: #e74c3c; margin-bottom: 0.8rem; font-size: 1.1em; border-bottom: 1px solid #e74c3c; padding-bottom: 0.3rem;">⚔️ Attaques</h4>
@@ -292,7 +280,6 @@ export default class BattleViews {
            </div>`
         : '<div style="margin-top: 1rem; text-align: center; color: #6c757d; font-size: 0.9em;"><em>❌ Aucune attaque</em></div>';
 
-      // Affichage compact des faiblesses et résistances
       const weaknessHtml = card.weaknesses && card.weaknesses.length > 0
         ? `<div style="margin-top: 0.8rem;">
              <h6 style="color: #e67e22; margin-bottom: 0.4rem; font-size: 0.9em;">🔥 Faiblesses</h6>
@@ -390,35 +377,80 @@ export default class BattleViews {
     }
 
     updateBattleZone(battleState) {
-        // Afficher les cartes actives et PV
         const playerZone = document.getElementById('playerActiveCard');
         const opponentZone = document.getElementById('opponentActiveCard');
         const playerHP = document.getElementById('playerHP');
         const opponentHP = document.getElementById('opponentHP');
         const log = document.getElementById('battleLog');
+
         if (battleState.playerActiveCard) {
-            playerZone.innerHTML = `<img src="${battleState.playerActiveCard.image}" alt="${battleState.playerActiveCard.name}" class="battle-card-image" style="cursor:pointer;"><div>${battleState.playerActiveCard.name}</div>`;
+            playerZone.innerHTML = `
+                <div class="battle-active-card">
+                    ${battleState.playerActiveCard.image
+                        ? `<img src="${battleState.playerActiveCard.image}" alt="${battleState.playerActiveCard.name}"
+                               class="battle-card-image" style="cursor:pointer;"
+                               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
+                        : ''
+                    }
+                    <div class="battle-card-fallback" style="${battleState.playerActiveCard.image ? 'display:none' : ''}">
+                        <div class="card-name">${battleState.playerActiveCard.name}</div>
+                        <div class="card-type">${battleState.playerActiveCard.types?.[0] || 'Pokemon'}</div>
+                    </div>
+                    <div class="battle-card-name">${battleState.playerActiveCard.name}</div>
+                    ${battleState.playerActiveCard.attacks?.length > 0
+                        ? `<div class="battle-attacks-preview">
+                             ${battleState.playerActiveCard.attacks.slice(0, 2).map(attack =>
+                                `<small>${attack.name}: ${attack.damage || '?'}</small>`
+                             ).join(' • ')}
+                           </div>`
+                        : '<small>Aucune attaque</small>'
+                    }
+                </div>
+            `;
             playerHP.textContent = battleState.playerHP;
-            // Ajout du clic pour voir les détails
-            const img = playerZone.querySelector('img');
+            const img = playerZone.querySelector('img, .battle-card-fallback');
             if (img) {
                 img.addEventListener('click', () => window.app.showCardDetails(battleState.playerActiveCard));
             }
         }
+
         if (battleState.opponentActiveCard) {
-            opponentZone.innerHTML = `<img src="${battleState.opponentActiveCard.image}" alt="${battleState.opponentActiveCard.name}" class="battle-card-image" style="cursor:pointer;"><div>${battleState.opponentActiveCard.name}</div>`;
+            opponentZone.innerHTML = `
+                <div class="battle-active-card">
+                    ${battleState.opponentActiveCard.image
+                        ? `<img src="${battleState.opponentActiveCard.image}" alt="${battleState.opponentActiveCard.name}"
+                               class="battle-card-image" style="cursor:pointer;"
+                               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
+                        : ''
+                    }
+                    <div class="battle-card-fallback" style="${battleState.opponentActiveCard.image ? 'display:none' : ''}">
+                        <div class="card-name">${battleState.opponentActiveCard.name}</div>
+                        <div class="card-type">${battleState.opponentActiveCard.types?.[0] || 'Pokemon'}</div>
+                    </div>
+                    <div class="battle-card-name">${battleState.opponentActiveCard.name}</div>
+                    ${battleState.opponentActiveCard.attacks?.length > 0
+                        ? `<div class="battle-attacks-preview">
+                             ${battleState.opponentActiveCard.attacks.slice(0, 2).map(attack =>
+                                `<small>${attack.name}: ${attack.damage || '?'}</small>`
+                             ).join(' • ')}
+                           </div>`
+                        : '<small>Aucune attaque</small>'
+                    }
+                </div>
+            `;
             opponentHP.textContent = battleState.opponentHP;
-            // Ajout du clic pour voir les détails
-            const img = opponentZone.querySelector('img');
+            const img = opponentZone.querySelector('img, .battle-card-fallback');
             if (img) {
                 img.addEventListener('click', () => window.app.showCardDetails(battleState.opponentActiveCard));
             }
         }
-        log.innerHTML = battleState.battleLog.slice(-6).map(l => `<div>${l}</div>`).join('');
+
+        if (log) {
+            log.innerHTML = battleState.battleLog.slice(-6).map(l => `<div>${l}</div>`).join('');
+        }
     }
 
     showChooseActiveModal(hand, onSelect) {
-        // Crée une modale pour choisir la carte active
         let modal = document.getElementById('chooseActiveModal');
         if (!modal) {
             modal = document.createElement('div');
@@ -438,9 +470,28 @@ export default class BattleViews {
             cardDiv.className = `card ${card.getTypeClass()}`;
             cardDiv.style.cursor = 'pointer';
             cardDiv.innerHTML = `
-                <img src="${card.image}" alt="${card.name}" style="width:80px;height:110px;border-radius:8px;box-shadow:0 2px 8px #aaa;">
-                <div style="font-weight:bold;">${card.name}</div>
-                <div style="font-size:0.9em;">PV: ${card.getHP()}</div>
+                <div class="choose-active-card">
+                    ${card.image
+                        ? `<img src="${card.image}" alt="${card.name}"
+                               style="width:80px;height:110px;border-radius:8px;box-shadow:0 2px 8px #aaa;"
+                               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
+                        : ''
+                    }
+                    <div class="card-fallback" style="${card.image ? 'display:none' : ''};text-align:center;padding:1rem;background:#f8f9fa;border-radius:8px;width:80px;height:110px;display:flex;flex-direction:column;justify-content:center;">
+                        <div style="font-weight:bold;font-size:0.8rem;">${card.name}</div>
+                        <div style="font-size:0.7rem;color:#666;">${card.types?.[0] || 'Pokemon'}</div>
+                    </div>
+                    <div style="margin-top:0.5rem;text-align:center;">
+                        <div style="font-weight:bold;font-size:0.9rem;">${card.name}</div>
+                        <div style="font-size:0.8rem;color:#666;">PV: ${card.getHP()}</div>
+                        ${card.attacks?.length > 0
+                            ? `<div style="font-size:0.7rem;color:#e74c3c;margin-top:0.2rem;">
+                                 ${card.attacks.length} attaque${card.attacks.length > 1 ? 's' : ''}
+                               </div>`
+                            : '<div style="font-size:0.7rem;color:#999;">Aucune attaque</div>'
+                        }
+                    </div>
+                </div>
             `;
             cardDiv.onclick = () => {
                 modal.style.display = 'none';
@@ -490,5 +541,198 @@ export default class BattleViews {
             list.appendChild(btn);
         });
         modal.style.display = 'block';
+    }
+
+    updateBoosterSelection(boosters, selectedType) {
+        const boosterContainer = document.getElementById('boosterSelection');
+        if (!boosterContainer) {
+            this.createBoosterInterface();
+            return this.updateBoosterSelection(boosters, selectedType);
+        }
+
+        const boosterGrid = boosterContainer.querySelector('.boosters-grid');
+        boosterGrid.innerHTML = '';
+
+        boosters.forEach(booster => {
+            const boosterCard = this.createBoosterCard(booster, selectedType === booster.id);
+            boosterGrid.appendChild(boosterCard);
+        });
+    }
+
+    createBoosterInterface() {
+        if (document.getElementById('boosterSelection')) {
+            return;
+        }
+
+        const sidebarElement = document.querySelector('.sidebar') || document.querySelector('.action-panel').parentElement;
+
+        const boosterSection = document.createElement('div');
+        boosterSection.className = 'boosters-selection';
+        boosterSection.id = 'boosterSelection';
+
+        boosterSection.innerHTML = `
+            <h3>🎴 Choisissez votre Booster</h3>
+            <div class="boosters-grid"></div>
+            <div class="booster-info">
+                <p class="credits-display">💰 Crédits: <span id="creditsDisplay">0</span></p>
+                <button class="btn" id="openSelectedBooster" onclick="app.openBooster()">
+                    🎴 Ouvrir le Booster Sélectionné
+                </button>
+            </div>
+        `;
+
+        const firstActionPanel = sidebarElement.querySelector('.action-panel');
+        if (firstActionPanel) {
+            sidebarElement.insertBefore(boosterSection, firstActionPanel);
+        } else {
+            sidebarElement.appendChild(boosterSection);
+        }
+    }
+
+    createBoosterCard(booster, isSelected) {
+        const card = document.createElement('div');
+        card.className = `booster-card ${booster.id} ${isSelected ? 'selected' : ''} ${!booster.affordable ? 'disabled' : ''}`;
+        card.onclick = () => {
+            if (booster.affordable) {
+                window.app?.selectBoosterType(booster.id);
+            }
+        };
+
+        const rareChance = Math.round(booster.rareChance * 100);
+        const ultraRareChance = Math.round(booster.ultraRareChance * 100);
+        const secretRareChance = Math.round(booster.secretRareChance * 100);
+
+        card.innerHTML = `
+            <div class="booster-effects"></div>
+            <div class="booster-header">
+                <span class="booster-icon">${booster.icon}</span>
+                <span class="booster-name">${booster.name.replace(/^[🎴📦✨🔥🌟🎭]+\s*/, '')}</span>
+                <span class="booster-price">${booster.price === 0 ? 'Gratuit' : booster.price + '💰'}</span>
+            </div>
+            <div class="booster-description">${booster.description}</div>
+            <div class="booster-stats">
+                <span class="card-count">📋 ${booster.cardCount === 0 ? '3-10' : booster.cardCount} cartes</span>
+                <span class="rare-chance">💎 ${rareChance}% rare</span>
+            </div>
+            <div class="booster-details">
+                <div class="chance-breakdown">
+                    ${ultraRareChance > 0 ? `<span class="ultra-chance">⭐ ${ultraRareChance}% ultra</span>` : ''}
+                    ${secretRareChance > 0 ? `<span class="secret-chance">🌟 ${secretRareChance}% secret</span>` : ''}
+                </div>
+                ${booster.cooldown > 0 ? '<div class="cooldown-info">⏰ Cooldown: 5min</div>' : ''}
+            </div>
+            ${isSelected ? '<div class="selected-indicator">✅ Sélectionné</div>' : ''}
+        `;
+
+        return card;
+    }
+
+    updateCreditsDisplay(credits) {
+        const creditsDisplay = document.getElementById('creditsDisplay');
+        if (creditsDisplay) {
+            creditsDisplay.textContent = credits;
+        }
+    }
+
+    showBoosterResult(result) {
+        const resultModal = document.createElement('div');
+        resultModal.className = 'booster-result-modal enhanced-modal';
+
+        const rareCount = result.cards.filter(c => c.rarity?.name === 'Rare').length;
+        const ultraRareCount = result.cards.filter(c => c.rarity?.name === 'Ultra Rare').length;
+        const secretRareCount = result.cards.filter(c => c.rarity?.name === 'Secret Rare').length;
+        const commonCount = result.cards.filter(c => c.rarity?.name === 'Common').length;
+        const uncommonCount = result.cards.filter(c => c.rarity?.name === 'Uncommon').length;
+        const sortedCards = [...result.cards].sort((a, b) => {
+            const rarityOrder = { 'Secret Rare': 5, 'Ultra Rare': 4, 'Rare': 3, 'Uncommon': 2, 'Common': 1 };
+            return (rarityOrder[b.rarity?.name] || 1) - (rarityOrder[a.rarity?.name] || 1);
+        });
+        window.currentBoosterCards = result.cards;
+
+        resultModal.innerHTML = `
+            <div class="enhanced-result-content" onclick="event.stopPropagation()">
+                <button class="enhanced-close-btn" onclick="this.closest('.booster-result-modal').remove()">&times;</button>
+
+                <div class="booster-result-header">
+                    <div class="booster-type-badge ${result.boosterType}">
+                        ${result.boosterType.charAt(0).toUpperCase() + result.boosterType.slice(1)} Pack
+                    </div>
+                    <h2>🎉 Félicitations ! 🎉</h2>
+                    <p>Vous avez obtenu ${result.cards.length} nouvelles cartes !</p>
+                </div>
+
+                <div class="booster-stats-grid">
+                    ${commonCount > 0 ? `<div class="stat-badge common"><span class="count">${commonCount}</span><span class="label">Communes</span></div>` : ''}
+                    ${uncommonCount > 0 ? `<div class="stat-badge uncommon"><span class="count">${uncommonCount}</span><span class="label">Peu communes</span></div>` : ''}
+                    ${rareCount > 0 ? `<div class="stat-badge rare"><span class="count">${rareCount}</span><span class="label">Rares</span></div>` : ''}
+                    ${ultraRareCount > 0 ? `<div class="stat-badge ultra-rare"><span class="count">${ultraRareCount}</span><span class="label">Ultra Rares</span></div>` : ''}
+                    ${secretRareCount > 0 ? `<div class="stat-badge secret-rare"><span class="count">${secretRareCount}</span><span class="label">Secrètes</span></div>` : ''}
+                </div>
+
+                <div class="enhanced-cards-grid">
+                    ${sortedCards.map((card, index) => `
+                        <div class="enhanced-card-item ${card.rarity?.name?.toLowerCase().replace(' ', '-') || 'common'}"
+                             style="animation-delay: ${index * 0.1}s"
+                             onclick="window.app.showCardDetails(window.currentBoosterCards[${result.cards.indexOf(card)}])">
+                            ${card.image ? `
+                                <img src="${card.image}" alt="${card.name}" class="enhanced-card-image"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            ` : ''}
+                            <div class="enhanced-card-placeholder" style="${card.image ? 'display:none;' : 'display:flex;'}">
+                                <div class="card-icon">🎴</div>
+                                <div class="card-name-short">${card.name.length > 12 ? card.name.substring(0, 12) + '...' : card.name}</div>
+                            </div>
+                            <div class="enhanced-card-overlay">
+                                <div class="card-name-full">${card.name}</div>
+                                <div class="card-rarity-badge ${card.rarity?.name?.toLowerCase().replace(' ', '-') || 'common'}">
+                                    ${card.rarity?.name || 'Common'}
+                                </div>
+                                ${card.types && card.types.length > 0 ? `
+                                    <div class="card-type-badge">
+                                        ${card.types[0].name || card.types[0]}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="card-shine-effect"></div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="booster-result-actions">
+                    <button class="btn-action btn-add-all" onclick="window.app.addCardsToDeck(window.currentBoosterCards); this.closest('.booster-result-modal').remove();">
+                        ➕ Ajouter toutes au Deck
+                    </button>
+                    <button class="btn-action btn-view-collection" onclick="window.location.href='collection.html'">
+                        📚 Voir la Collection
+                    </button>
+                    <button class="btn-action btn-close-modal" onclick="this.closest('.booster-result-modal').remove()">
+                        ✨ Fermer
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(resultModal);
+
+        resultModal.addEventListener('click', () => {
+            resultModal.remove();
+            delete window.currentBoosterCards;
+        });
+
+        setTimeout(() => {
+            resultModal.classList.add('show');
+        }, 50);
+
+        setTimeout(() => {
+            if (resultModal.parentElement) {
+                resultModal.classList.add('fade-out');
+                setTimeout(() => {
+                    if (resultModal.parentElement) {
+                        resultModal.remove();
+                        delete window.currentBoosterCards;
+                    }
+                }, 500);
+            }
+        }, 30000);
     }
 }

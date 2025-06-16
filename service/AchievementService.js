@@ -60,14 +60,6 @@ class AchievementService {
                 points: 40
             },
             {
-                id: 'damage_dealer',
-                name: 'Destructeur',
-                description: 'Infligez 1000 points de dégâts au total',
-                icon: '💥',
-                condition: (state) => state.statistics?.totalDamageDealt >= 1000,
-                points: 80
-            },
-            {
                 id: 'marathon_player',
                 name: 'Marathonien',
                 description: 'Ouvrez 20 boosters',
@@ -103,7 +95,6 @@ class AchievementService {
     }
 
     showAchievementNotification(achievement) {
-        // Créer une notification d'achievement
         const notification = document.createElement('div');
         notification.className = 'achievement-notification';
         notification.innerHTML = `
@@ -120,10 +111,8 @@ class AchievementService {
 
         document.body.appendChild(notification);
 
-        // Animation d'apparition
         setTimeout(() => notification.classList.add('show'), 100);
 
-        // Suppression automatique
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => document.body.removeChild(notification), 300);

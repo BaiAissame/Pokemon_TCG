@@ -141,7 +141,6 @@
                 this.view = new CollectionView();
                 this.soundService = new SoundService();
 
-                // Lier la vue et le contrôleur
                 this.view.setController(this.controller);
                 this.controller.setView(this.view);
 
@@ -154,7 +153,6 @@
                 this.refreshCollection();
                 this.attachGlobalEventListeners();
 
-                console.log('Collection App initialisée');
             }
 
             updatePlayerInfo() {
@@ -187,7 +185,6 @@
                     this.view.showMessage(message, 'info');
                 };
 
-                // Événements des boutons d'action
                 document.addEventListener('click', (e) => {
                     if (e.target.id === 'deckBuilderBtn') {
                         this.openDeckBuilder();
@@ -250,7 +247,7 @@
                     btn.addEventListener('click', (e) => {
                         const cardId = e.target.dataset.cardId;
                         if (this.controller.addCardToDeck(cardId)) {
-                            this.loadDeckBuilder(); // Recharger l'affichage
+                            this.loadDeckBuilder();
                             this.view.showMessage('Carte ajoutée au deck!', 'success');
                         }
                     });

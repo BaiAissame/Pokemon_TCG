@@ -1,18 +1,23 @@
 import GameStateModel from '../models/GameStateModel.js';
 import BattleViews from '../views/BattleViews.js';
-import PokemonAPIService from '../service/pokemonAPIService.js';
+import PokemonTCGAPIService from '../service/PokemonTCGAPIService.js';
 import CardModel from "../models/CardModel.js";
 import SoundService from '../service/SoundService.js';
 import AchievementService from '../service/AchievementService.js';
+import BoosterService from '../service/BoosterService.js';
+import CardAnimationService from '../service/CardAnimationService.js';
 
 export default class BattleController {
-    constructor(tcgdx) {
+    constructor() {
         this.gameState = new GameStateModel();
         this.battleViews = new BattleViews();
-        this.pokemonAPI = new PokemonAPIService(tcgdx);
+        this.pokemonAPI = new PokemonTCGAPIService();
         this.soundService = new SoundService();
         this.achievementService = new AchievementService(this.gameState);
+        this.boosterService = new BoosterService(this.pokemonAPI, this.soundService);
+        this.animationService = new CardAnimationService();
         this.selectedRating = 0;
+        this.selectedBoosterType = 'standard';
         this.battleState = {
             inBattle: false,
             currentOpponent: null,
@@ -20,12 +25,11 @@ export default class BattleController {
             opponentActiveCard: null,
             playerHP: 100,
             opponentHP: 100,
-            turn: 'player', // 'player' ou 'opponent'
+            turn: 'player',
             battleLog: [],
-            // Nouvelles propriétés
             combo: 0,
             score: 0,
-            difficulty: 'normal' // 'easy', 'normal', 'hard'
+            difficulty: 'normal'
         };
         this.gameState.addObserver(this.battleViews);
         this.init();
@@ -35,7 +39,6 @@ export default class BattleController {
         this.gameState.load();
         this.startTimer();
 
-        // Charger quelques cartes au démarrage si aucune carte
         if (this.gameState.deck.length === 0 && this.gameState.hand.length === 0) {
             await this.drawCards();
         }
@@ -48,44 +51,50 @@ export default class BattleController {
     }
 
     async drawCards() {
-        if (!this.gameState.canDrawCards()) {
-            this.battleViews.onError('Vous devez attendre 5 minutes entre chaque tirage!');
+        await this.openBooster(this.selectedBoosterType);
+    }
+
+    async openBooster(boosterType = 'standard') {
+        if (boosterType === 'standard' && !this.gameState.canDrawCards()) {
+            this.battleViews.onError('Vous devez attendre 5 minutes entre chaque tirage standard!');
+            return;
+        }
+
+        const boosterConfig = this.boosterService.boosterTypes[boosterType];
+        if (this.gameState.credits < boosterConfig.price) {
+            this.battleViews.onError(`Crédits insuffisants! Il vous faut ${boosterConfig.price} crédits.`);
             return;
         }
 
         this.battleViews.showLoading(true);
 
         try {
-            const cards = await this.pokemonAPI.getRandomCards(5);
-            const cardModels = cards.map(cardData => new CardModel(cardData));
-            this.gameState.addCardsToDeck(cardModels);
-            this.gameState.setLastDrawTime();
+            const result = await this.boosterService.openBooster(boosterType, this.gameState);
 
-            // Son et achievements pour le tirage
-            this.soundService.playSound('cardDraw');
+            await this.animationService.playBoosterOpenAnimation(boosterType, result.cards);
+
+            this.battleViews.showBoosterResult(result);
+            if (boosterType === 'standard') {
+                this.gameState.setLastDrawTime();
+            }
+
+            this.gameState.boosters++;
+
             this.achievementService.checkAchievements();
 
-        } catch (error) {
-            console.error('Erreur lors du tirage:', error);
-            this.battleViews.onError('Erreur lors du tirage des cartes. Veuillez réessayer.');
-        } finally {
-            this.battleViews.showLoading(false);
-        }
-    }
+            this.gameState.save();
 
-    async drawFallbackCards() {
-        this.battleViews.showLoading(true);
-        try {
-            const cards = this.pokemonAPI.generateFallbackCards(5);
-            const cardModels = cards.map(cardData => new CardModel(cardData));
-            this.gameState.addCardsToDeck(cardModels);
-            this.battleViews.onCardsAdded(cards);
+            const rareCount = result.cards.filter(card => card.rarity?.name !== 'Common' && card.rarity?.name !== 'Uncommon').length;
+            let message = `🎉 ${boosterConfig.name} ouvert! ${result.cards.length} cartes obtenues`;
+            if (rareCount > 0) {
+                message += ` dont ${rareCount} carte${rareCount > 1 ? 's' : ''} rare${rareCount > 1 ? 's' : ''}!`;
+            }
 
-            // Son pour le tirage fallback
-            this.soundService.playSound('cardDraw');
+            this.battleViews.showMessage(message, 'success');
+
         } catch (error) {
-            console.error('Erreur lors du tirage fallback:', error);
-            this.battleViews.onError('Erreur lors du tirage des cartes fallback.');
+            console.error('Erreur lors de l\'ouverture du booster:', error);
+            this.battleViews.onError('Erreur lors de l\'ouverture du booster. Veuillez réessayer.');
         } finally {
             this.battleViews.showLoading(false);
         }
@@ -108,13 +117,11 @@ export default class BattleController {
     }
 
     async chooseActiveCard() {
-        // Ouvre une modale pour choisir la carte active parmi la main
         if (this.gameState.hand.length === 0) {
             this.battleViews.onError("Vous n'avez aucune carte en main !");
             return;
         }
         this.battleViews.showChooseActiveModal(this.gameState.hand, (selectedCard) => {
-            // Si la carte active est déjà celle-ci et qu'elle a déjà perdu des PV, ne rien faire
             if (
                 this.battleState.playerActiveCard &&
                 this.battleState.playerActiveCard.id === selectedCard.id &&
@@ -124,25 +131,21 @@ export default class BattleController {
                 this.checkAttackReady();
                 return;
             }
-            // Sinon, on sélectionne la carte et on initialise ses PV
             this.battleState.playerActiveCard = selectedCard;
             this.battleState.playerHP = selectedCard.getHP();
             this.updateBattleZone();
             this.checkAttackReady();
 
-            // Son pour jouer une carte
             this.soundService.playSound('cardPlay');
         });
     }
 
     async chooseOpponent() {
-        // Générer un adversaire aléatoire (nom et carte)
         const trainers = this.gameState.trainers.length > 0 ? this.gameState.trainers : [
             { name: 'Rival', avatar: '', rating: 3.5 }
         ];
         const randomTrainer = trainers[Math.floor(Math.random() * trainers.length)];
         this.battleState.currentOpponent = randomTrainer;
-        // Générer une carte aléatoire pour l'adversaire
         const cards = await this.pokemonAPI.getRandomCards(1);
         this.battleState.opponentActiveCard = new CardModel(cards[0]);
         this.battleState.opponentHP = this.battleState.opponentActiveCard.getHP();
@@ -166,15 +169,12 @@ export default class BattleController {
         }
         if (this.battleState.turn !== 'player') return;
 
-        // Proposer toutes les attaques disponibles
         let attacks = Array.isArray(this.battleState.playerActiveCard.attacks) ? this.battleState.playerActiveCard.attacks : [];
         if (!attacks || attacks.length === 0) {
-            // Ajoute une attaque basique si aucune attaque n'est trouvée
             attacks = [{ name: 'Charge', damage: 10, text: 'Attaque par défaut.' }];
         }
 
         this.battleViews.showChooseAttackModal(attacks, (attack) => {
-            // Calcul des dégâts avec faiblesse/résistance
             let dmg = 0;
             if (typeof attack.damage === 'number') {
                 dmg = attack.damage;
@@ -182,20 +182,15 @@ export default class BattleController {
                 const match = attack.damage.match(/\d+/);
                 dmg = match ? parseInt(match[0]) : 0;
             }
-            // Appliquer faiblesse/résistance
             dmg = this.applyWeaknessResistance(dmg, this.battleState.playerActiveCard, this.battleState.opponentActiveCard);
             this.battleState.opponentHP = Math.max(0, this.battleState.opponentHP - dmg);
             this.battleState.battleLog.push(`${this.battleState.playerActiveCard.name} utilise ${attack.name} pour ${dmg} dégâts !`);
 
-            // Système de combo et sons
             this.addCombo();
             this.soundService.playSound('attack');
             if (this.battleState.combo > 1) {
                 this.soundService.playSound('combo', { pitch: 1 + (this.battleState.combo * 0.1) });
             }
-
-            // Statistiques
-            this.gameState.updateStatistics('totalDamageDealt', dmg);
 
             this.updateBattleZone();
             if (this.battleState.opponentHP <= 0) {
@@ -203,14 +198,12 @@ export default class BattleController {
                 this.gameState.credits += 50;
                 this.gameState.battles++;
 
-                // Gérer les victoires parfaites
                 const perfectWin = this.battleState.playerHP === this.battleState.playerActiveCard.getHP();
                 if (perfectWin) {
                     this.battleState.perfectWin = true;
                     this.battleState.battleLog.push('🛡️ Victoire parfaite !');
                 }
 
-                // Sons et achievements
                 this.soundService.playSound('win');
                 this.gameState.updateStatistics('totalWins', 1);
                 this.gameState.updateStatistics('currentWinStreak', 1);
@@ -226,7 +219,6 @@ export default class BattleController {
     }
 
     applyWeaknessResistance(dmg, attacker, defender) {
-        // Applique les faiblesses/résistances simples (x2 ou -20)
         let finalDmg = dmg;
         if (defender.weaknesses && defender.weaknesses.length > 0 && attacker.types && attacker.types.length > 0) {
             const atkType = attacker.types[0].name || attacker.types[0];
@@ -247,7 +239,6 @@ export default class BattleController {
         if (!attacks || attacks.length === 0) {
             attacks = [{ name: 'Charge', damage: 10, text: 'Attaque par défaut.' }];
         }
-        // L'IA choisit une attaque aléatoire
         const attack = attacks[Math.floor(Math.random() * attacks.length)];
         let dmg = 0;
         if (attack) {
@@ -265,7 +256,6 @@ export default class BattleController {
         if (this.battleState.playerHP <= 0) {
             this.battleState.battleLog.push('💀 Défaite...');
 
-            // Sons et stats pour défaite
             this.soundService.playSound('lose');
             this.gameState.updateStatistics('totalLosses', 1);
             this.gameState.statistics.currentWinStreak = 0; // Reset win streak
@@ -281,7 +271,6 @@ export default class BattleController {
         this.battleViews.updateBattleZone(this.battleState);
     }
 
-    // Nouveau système de combo et score
     addCombo() {
         this.battleState.combo++;
         const bonusPoints = this.battleState.combo * 10;
@@ -295,16 +284,16 @@ export default class BattleController {
         this.battleState.combo = 0;
     }
 
-    // Difficulté adaptative
-    adjustDifficulty() {
-        const winRate = this.gameState.battles > 0 ? (this.gameState.credits - 100) / (this.gameState.battles * 50) : 0;
+    addCardsToDeck(cards) {
+        try {
+            const cardModels = cards.map(cardData => new CardModel(cardData));
+            this.gameState.addCardsToDeck(cardModels);
+            this.gameState.save();
 
-        if (winRate > 0.8) {
-            this.battleState.difficulty = 'hard';
-        } else if (winRate < 0.3) {
-            this.battleState.difficulty = 'easy';
-        } else {
-            this.battleState.difficulty = 'normal';
+            this.battleViews.showMessage(`🎉 ${cards.length} cartes ajoutées au deck !`, 'success');
+        } catch (error) {
+            console.error('Erreur lors de l\'ajout des cartes:', error);
+            this.battleViews.onError('Erreur lors de l\'ajout des cartes au deck.');
         }
     }
 }
