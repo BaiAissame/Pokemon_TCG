@@ -72,6 +72,38 @@ class SoundService {
     setVolume(volume) {
         this.volume = Math.max(0, Math.min(1, volume));
     }
+
+    playMusic() {
+        const firstAudio = new Audio('./music/next-battle.mp3');
+        const secondAudio = new Audio('./music/Encounter.mp3');
+        firstAudio.loop = false;
+        secondAudio.loop = true;
+
+        // Quand la première musique se termine, on lance la seconde
+        firstAudio.addEventListener('ended', () => {
+            secondAudio.play();
+        });
+
+        // Tentative de lecture automatique, sinon attend un clic utilisateur
+        firstAudio.play().catch(() => {
+            document.body.addEventListener('click', function playMusicOnce() {
+                firstAudio.play();
+                document.body.removeEventListener('click', playMusicOnce);
+            });
+        });
+        // secondAudio.volume = 0.5;
+    }
+
+    looserSound() {
+        const audio = new Audio('./music/baby-crying.mp3');
+        audio.loop = false;
+        audio.play().catch(() => {
+            document.body.addEventListener('click', function playMusicOnce() {
+                audio.play();
+                document.body.removeEventListener('click', playMusicOnce);
+            });
+        });
+    }
 }
 
 export default SoundService;

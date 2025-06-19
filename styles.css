@@ -14,7 +14,7 @@ body {
 .header {
     background: rgba(255, 255, 255, 0.95);
     padding: 1rem 2rem;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -28,7 +28,7 @@ body {
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .player-info {
@@ -47,7 +47,7 @@ body {
     justify-content: center;
     gap: 2rem;
     backdrop-filter: blur(10px);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .nav-link {
@@ -88,7 +88,7 @@ body {
 
 .main-container {
     display: grid;
-    grid-template-columns: 1fr 350px;
+    grid-template-columns: 1fr 250px;
     gap: 2rem;
     padding: 2rem;
     max-width: 1600px;
@@ -99,15 +99,16 @@ body {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding-inline: 2rem;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
 }
 
 .deck-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
+    grid-column: span 2;
+    /* display: grid; */
+    /* grid-template-columns: 1fr 1fr; */
+    /* gap: 2rem; */
+    /* margin-bottom: 2rem; */
 }
 
 .deck {
@@ -115,7 +116,7 @@ body {
     border-radius: 15px;
     padding: 1.5rem;
     border: 3px solid #3066be;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .deck h3 {
@@ -131,11 +132,13 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 1rem;
     min-height: 180px;
-    padding: 1.5rem;
+    padding: 1rem 0;
     border: 2px dashed #dee2e6;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.8);
     transition: all 0.3s ease;
+    justify-items: center;
+    align-items: center;    
 }
 
 .cards-container.drag-over {
@@ -160,8 +163,8 @@ body {
     font-weight: bold;
     text-align: center;
     color: white;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
     overflow: hidden;
     padding: 0.5rem;
 }
@@ -173,7 +176,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
     transform: translateX(-100%);
     transition: transform 0.6s;
 }
@@ -184,7 +187,7 @@ body {
 
 .card:hover {
     transform: translateY(-8px) scale(1.05);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
 .card.dragging {
@@ -196,8 +199,8 @@ body {
 .card-back {
     background: linear-gradient(145deg, #4169e1, #1e3a8a);
     background-image:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 2px, transparent 2px),
-        radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1) 1px, transparent 1px);
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 2px, transparent 2px),
+        radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
     justify-content: center;
 }
 
@@ -228,12 +231,14 @@ body {
     height: 60px;
     border-radius: 6px;
     object-fit: cover;
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
+
 .card-image.full-cover {
     width: 100%;
     height: 100%;
-    border-radius: 12px; /* Même valeur que la carte */
+    border-radius: 12px;
+    /* Même valeur que la carte */
     object-fit: cover;
     border: none;
     position: absolute;
@@ -266,17 +271,49 @@ body {
 }
 
 /* Type colors */
-.card.grass { background: linear-gradient(145deg, #78c850, #4e7b2b); }
-.card.fire { background: linear-gradient(145deg, #f08030, #9c5221); }
-.card.water { background: linear-gradient(145deg, #6890f0, #445e9c); }
-.card.lightning { background: linear-gradient(145deg, #f8d030, #a1871f); }
-.card.psychic { background: linear-gradient(145deg, #f85888, #a13959); }
-.card.fighting { background: linear-gradient(145deg, #c03028, #7d1f1a); }
-.card.darkness { background: linear-gradient(145deg, #705848, #49392f); }
-.card.metal { background: linear-gradient(145deg, #b7b7ce, #787891); }
-.card.fairy { background: linear-gradient(145deg, #ee99ac, #9b616f); }
-.card.dragon { background: linear-gradient(145deg, #7038f8, #492ca0); }
-.card.colorless { background: linear-gradient(145deg, #a8a878, #6d6d4e); }
+.card.grass {
+    background: linear-gradient(145deg, #78c850, #4e7b2b);
+}
+
+.card.fire {
+    background: linear-gradient(145deg, #f08030, #9c5221);
+}
+
+.card.water {
+    background: linear-gradient(145deg, #6890f0, #445e9c);
+}
+
+.card.lightning {
+    background: linear-gradient(145deg, #f8d030, #a1871f);
+}
+
+.card.psychic {
+    background: linear-gradient(145deg, #f85888, #a13959);
+}
+
+.card.fighting {
+    background: linear-gradient(145deg, #c03028, #7d1f1a);
+}
+
+.card.darkness {
+    background: linear-gradient(145deg, #705848, #49392f);
+}
+
+.card.metal {
+    background: linear-gradient(145deg, #b7b7ce, #787891);
+}
+
+.card.fairy {
+    background: linear-gradient(145deg, #ee99ac, #9b616f);
+}
+
+.card.dragon {
+    background: linear-gradient(145deg, #7038f8, #492ca0);
+}
+
+.card.colorless {
+    background: linear-gradient(145deg, #a8a878, #6d6d4e);
+}
 
 .sidebar {
     display: flex;
@@ -291,8 +328,8 @@ body {
 .action-panel {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    padding: 1rem 2rem;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
 }
 
@@ -323,7 +360,7 @@ body {
 .btn:hover:not(:disabled) {
     background: linear-gradient(145deg, #2c5aa0, #1e3a8a);
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .btn:disabled {
@@ -385,9 +422,17 @@ body {
 
 /* Animations et transitions améliorées */
 @keyframes cardFlip {
-    0% { transform: rotateY(0deg); }
-    50% { transform: rotateY(90deg); }
-    100% { transform: rotateY(0deg); }
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    50% {
+        transform: rotateY(90deg);
+    }
+
+    100% {
+        transform: rotateY(0deg);
+    }
 }
 
 @keyframes cardDraw {
@@ -395,6 +440,7 @@ body {
         transform: translateY(100px) rotateZ(10deg) scale(0.8);
         opacity: 0;
     }
+
     100% {
         transform: translateY(0) rotateZ(0deg) scale(1);
         opacity: 1;
@@ -402,11 +448,25 @@ body {
 }
 
 @keyframes battleEffect {
-    0% { transform: scale(1); }
-    25% { transform: scale(1.05) rotate(1deg); }
-    50% { transform: scale(1.1) rotate(-1deg); }
-    75% { transform: scale(1.05) rotate(1deg); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    25% {
+        transform: scale(1.05) rotate(1deg);
+    }
+
+    50% {
+        transform: scale(1.1) rotate(-1deg);
+    }
+
+    75% {
+        transform: scale(1.05) rotate(1deg);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .card.new-card {
@@ -459,7 +519,7 @@ body {
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.9);
+    background: rgba(0, 0, 0, 0.9);
     color: white;
     padding: 0.5rem;
     border-radius: 4px;
@@ -485,8 +545,15 @@ body {
 }
 
 @keyframes slideIn {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .message.success {
@@ -539,7 +606,7 @@ body {
 .trainer-card:hover {
     background: rgba(255, 255, 255, 1);
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     border-color: #3066be;
 }
 
@@ -573,7 +640,7 @@ body {
     width: 90%;
     max-height: 90vh;
     overflow: hidden;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
     flex-direction: column;
@@ -592,7 +659,7 @@ body {
     max-height: calc(95vh - 6rem);
 }
 
-.card-detail > div {
+.card-detail>div {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
@@ -706,8 +773,13 @@ body {
 }
 
 @keyframes bounce {
-    from { transform: translateY(0); }
-    to { transform: translateY(-5px); }
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-5px);
+    }
 }
 
 .achievement-title {
@@ -738,7 +810,7 @@ body {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
 }
 
@@ -765,7 +837,7 @@ body {
 
 .achievement-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .battle-stats {
@@ -773,7 +845,7 @@ body {
     justify-content: space-between;
     margin: 1rem 0;
     padding: 1rem;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     backdrop-filter: blur(5px);
 }
@@ -798,9 +870,17 @@ body {
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .progress-bar {
@@ -823,7 +903,7 @@ body {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
 }
 
@@ -854,13 +934,24 @@ body {
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.rarity-indicator.common { background: #8d6e63; }
-.rarity-indicator.uncommon { background: #c0c0c0; }
-.rarity-indicator.rare { background: #ffd700; }
-.rarity-indicator.legendary { background: linear-gradient(45deg, #ff6b6b, #ffd93d); }
+.rarity-indicator.common {
+    background: #8d6e63;
+}
+
+.rarity-indicator.uncommon {
+    background: #c0c0c0;
+}
+
+.rarity-indicator.rare {
+    background: #ffd700;
+}
+
+.rarity-indicator.legendary {
+    background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+}
 
 /* ===============================
    COLLECTION STYLES
@@ -893,7 +984,7 @@ body {
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .stat-badge.rare {
@@ -918,7 +1009,7 @@ body {
     padding: 1.5rem;
     background: rgba(255, 255, 255, 0.8);
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .search-bar {
@@ -1004,7 +1095,7 @@ body {
     position: relative;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     overflow: hidden;
     border: 2px solid transparent;
@@ -1012,7 +1103,7 @@ body {
 
 .collection-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     border-color: #3498db;
 }
 
@@ -1094,7 +1185,7 @@ body {
     padding: 1rem;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
 }
 
@@ -1114,7 +1205,7 @@ body {
     align-items: center;
     text-align: center;
     padding: 0.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .battle-card-fallback .card-name {
@@ -1174,12 +1265,13 @@ body {
 
 /* Battle Zone Container */
 .battle-zone {
+    grid-column: span 4;
     background: linear-gradient(145deg, #fff3cd, #ffeaa7);
     border-radius: 15px;
     padding: 2rem;
     border: 3px solid #f39c12;
     box-shadow: 0 8px 25px rgba(243, 156, 18, 0.2);
-    margin: 2rem 0;
+    margin: 1rem 0;
 }
 
 .battle-zone h3 {
@@ -1229,7 +1321,7 @@ body {
 .player-battle:hover,
 .opponent-battle:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* Battle Card Display */
@@ -1237,7 +1329,7 @@ body {
     width: 80px;
     height: 110px;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     margin-bottom: 0.5rem;
     object-fit: cover;
     transition: transform 0.3s ease;
@@ -1308,8 +1400,8 @@ body {
 }
 
 /* HP Display */
-.player-battle > div:nth-child(3),
-.opponent-battle > div:nth-child(3) {
+.player-battle>div:nth-child(3),
+.opponent-battle>div:nth-child(3) {
     font-weight: bold;
     font-size: 1.1rem;
     color: #2c3e50;
@@ -1347,7 +1439,7 @@ body {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
     margin-bottom: 1.5rem;
     width: 100%;
@@ -1362,7 +1454,7 @@ body {
     font-size: 1.4rem;
     font-weight: 700;
     text-align: center;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Grille des cartes de boosters */
@@ -1376,7 +1468,8 @@ body {
     margin-right: auto;
     width: 100%;
     box-sizing: border-box;
-    justify-content: center; /* Centre les cartes */
+    justify-content: center;
+    /* Centre les cartes */
 }
 
 /* Carte de booster individuelle */
@@ -1406,7 +1499,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
     transform: translateX(-100%);
     transition: transform 0.6s;
     z-index: 1;
@@ -1418,7 +1511,7 @@ body {
 
 .booster-card:hover {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     border-color: #3498db;
 }
 
@@ -1438,7 +1531,7 @@ body {
 
 .booster-card.disabled:hover {
     transform: none;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-color: #e9ecef;
 }
 
@@ -1481,19 +1574,46 @@ body {
 }
 
 @keyframes sparkle {
-    0%, 100% { opacity: 0.7; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.2); }
+
+    0%,
+    100% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
 }
 
 @keyframes flame {
-    0% { transform: scale(1) rotate(-2deg); }
-    100% { transform: scale(1.1) rotate(2deg); }
+    0% {
+        transform: scale(1) rotate(-2deg);
+    }
+
+    100% {
+        transform: scale(1.1) rotate(2deg);
+    }
 }
 
 @keyframes mystery-glow {
-    0%, 100% { opacity: 0.8; filter: hue-rotate(0deg); }
-    33% { opacity: 1; filter: hue-rotate(120deg); }
-    66% { opacity: 0.9; filter: hue-rotate(240deg); }
+
+    0%,
+    100% {
+        opacity: 0.8;
+        filter: hue-rotate(0deg);
+    }
+
+    33% {
+        opacity: 1;
+        filter: hue-rotate(120deg);
+    }
+
+    66% {
+        opacity: 0.9;
+        filter: hue-rotate(240deg);
+    }
 }
 
 /* Header de la carte booster */
@@ -1509,7 +1629,7 @@ body {
 .booster-icon {
     font-size: 2rem;
     margin-right: 0.5rem;
-    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .booster-name {
@@ -1553,13 +1673,14 @@ body {
     z-index: 3;
 }
 
-.card-count, .rare-chance {
+.card-count,
+.rare-chance {
     background: rgba(255, 255, 255, 0.9);
     padding: 0.4rem 0.6rem;
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 600;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     flex: 1;
     text-align: center;
 }
@@ -1586,7 +1707,8 @@ body {
     margin-bottom: 0.8rem;
 }
 
-.ultra-chance, .secret-chance {
+.ultra-chance,
+.secret-chance {
     background: linear-gradient(45deg, #9b59b6, #8e44ad);
     color: white;
     padding: 0.2rem 0.5rem;
@@ -1603,8 +1725,16 @@ body {
 }
 
 @keyframes rare-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; transform: scale(1.05); }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
 }
 
 .booster-card.selected .ultra-chance,
@@ -1647,9 +1777,17 @@ body {
 }
 
 @keyframes selection-bounce {
-    0% { transform: scale(0) rotate(180deg); }
-    60% { transform: scale(1.2) rotate(-10deg); }
-    100% { transform: scale(1) rotate(0deg); }
+    0% {
+        transform: scale(0) rotate(180deg);
+    }
+
+    60% {
+        transform: scale(1.2) rotate(-10deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
 }
 
 /* Zone d'information des boosters */
@@ -1670,7 +1808,7 @@ body {
     border-radius: 12px;
     border: 2px solid #e1e5e9;
     color: #2c3e50;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #openSelectedBooster {
@@ -1697,7 +1835,7 @@ body {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.5s;
 }
 
@@ -1742,7 +1880,8 @@ body {
     backdrop-filter: blur(5px);
 }
 
-.result-content, .event-content {
+.result-content,
+.event-content {
     background: linear-gradient(145deg, #ffffff, #f8f9fa);
     padding: 2.5rem;
     border-radius: 20px;
@@ -1787,7 +1926,7 @@ body {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
     transition: left 0.5s;
 }
 
@@ -1797,7 +1936,7 @@ body {
 
 .preview-card:hover {
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .preview-card.rare {
@@ -1846,10 +1985,12 @@ body {
         opacity: 0;
         transform: scale(0.7) translateY(-50px) rotateX(30deg);
     }
+
     50% {
         opacity: 0.8;
         transform: scale(1.05) translateY(0) rotateX(-5deg);
     }
+
     100% {
         opacity: 1;
         transform: scale(1) translateY(0) rotateX(0deg);
@@ -1861,6 +2002,7 @@ body {
         box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
         filter: brightness(1);
     }
+
     100% {
         box-shadow: 0 8px 25px rgba(243, 156, 18, 0.8);
         filter: brightness(1.1);
@@ -1868,7 +2010,8 @@ body {
 }
 
 /* Boutons de fermeture améliorés */
-.result-content button, .event-content button {
+.result-content button,
+.event-content button {
     background: linear-gradient(145deg, #3498db, #2980b9);
     color: white;
     border: none;
@@ -1883,18 +2026,20 @@ body {
     overflow: hidden;
 }
 
-.result-content button::before, .event-content button::before {
+.result-content button::before,
+.event-content button::before {
     content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.5s;
 }
 
-.result-content button:hover::before, .event-content button:hover::before {
+.result-content button:hover::before,
+.event-content button:hover::before {
     left: 100%;
 }
 
@@ -1910,17 +2055,20 @@ body {
         grid-template-columns: 1fr;
         gap: 1rem;
         padding: 1rem;
-        overflow-x: hidden; /* Évite le débordement horizontal */
+        overflow-x: hidden;
+        /* Évite le débordement horizontal */
         width: 100vw;
         max-width: 100vw;
         box-sizing: border-box;
     }
 
     .sidebar {
-        order: -1; /* Place la sidebar avant le main content sur mobile */
+        order: -1;
+        /* Place la sidebar avant le main content sur mobile */
         width: 100%;
         max-width: 100%;
-        overflow-x: hidden; /* Empêche le débordement horizontal */
+        overflow-x: hidden;
+        /* Empêche le débordement horizontal */
         box-sizing: border-box;
     }
 
@@ -1938,7 +2086,8 @@ body {
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
-        overflow-x: hidden; /* Sécurité supplémentaire */
+        overflow-x: hidden;
+        /* Sécurité supplémentaire */
     }
 
     .boosters-grid {
@@ -1983,7 +2132,8 @@ body {
         gap: 0.5rem;
     }
 
-    .card-count, .rare-chance {
+    .card-count,
+    .rare-chance {
         font-size: 0.75rem;
         padding: 0.3rem 0.5rem;
     }
@@ -1993,7 +2143,8 @@ body {
         gap: 0.3rem;
     }
 
-    .ultra-chance, .secret-chance {
+    .ultra-chance,
+    .secret-chance {
         font-size: 0.65rem;
         padding: 0.15rem 0.4rem;
     }
@@ -2012,7 +2163,8 @@ body {
         font-size: 1rem;
     }
 
-    .result-content, .event-content {
+    .result-content,
+    .event-content {
         padding: 1.5rem;
         width: 95%;
         margin: 1rem;
@@ -2073,10 +2225,11 @@ body {
         margin-top: 0.2rem;
     }
 
-    .result-content, .event-content {
+    .result-content,
+    .event-content {
         padding: 1rem;
         border-radius: 15px;
-        }
+    }
 
     .cards-preview {
         flex-direction: column;
@@ -2138,7 +2291,8 @@ body {
     .boosters-selection {
         margin-left: auto;
         margin-right: auto;
-        max-width: 1400px; /* Limite la largeur totale */
+        max-width: 1400px;
+        /* Limite la largeur totale */
     }
 
     .boosters-grid {
@@ -2149,10 +2303,12 @@ body {
     }
 
     .booster-card {
-        max-width: 350px; /* Limite stricte de largeur */
+        max-width: 350px;
+        /* Limite stricte de largeur */
         min-height: 240px;
         padding: 2.5rem;
-        width: 100%; /* S'assure que la carte prend toute la largeur de sa colonne */
+        width: 100%;
+        /* S'assure que la carte prend toute la largeur de sa colonne */
     }
 
     .booster-icon {
@@ -2172,7 +2328,8 @@ body {
         gap: 1rem;
     }
 
-    .card-count, .rare-chance {
+    .card-count,
+    .rare-chance {
         padding: 0.5rem 0.8rem;
         font-size: 0.9rem;
     }
@@ -2185,15 +2342,18 @@ body {
     }
 
     .boosters-grid {
-        grid-template-columns: repeat(4, 320px); /* 4 colonnes fixes */
+        grid-template-columns: repeat(4, 320px);
+        /* 4 colonnes fixes */
         gap: 3rem;
-        max-width: 1520px; /* 4 * 320px + 3 * 3rem gaps = 1427px + padding */
+        max-width: 1520px;
+        /* 4 * 320px + 3 * 3rem gaps = 1427px + padding */
         justify-content: center;
     }
 
     .booster-card {
         max-width: 320px;
-        width: 320px; /* Largeur fixe pour éviter le débordement */
+        width: 320px;
+        /* Largeur fixe pour éviter le débordement */
     }
 }
 
@@ -2213,8 +2373,10 @@ body {
     z-index: 10000;
     padding: 2rem;
     box-sizing: border-box;
-    overflow-y: auto; /* Permet le scroll vertical si nécessaire */
-    overflow-x: hidden; /* Évite le scroll horizontal */
+    overflow-y: auto;
+    /* Permet le scroll vertical si nécessaire */
+    overflow-x: hidden;
+    /* Évite le scroll horizontal */
 }
 
 .booster-header {
@@ -2226,7 +2388,7 @@ body {
 .booster-header h2 {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .booster-header p {
@@ -2279,10 +2441,11 @@ body {
     transition: transform 0.6s;
 }
 
-.card-back, .card-front {
+.card-back,
+.card-front {
     backface-visibility: hidden;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2306,8 +2469,8 @@ body {
 .card-back {
     background: linear-gradient(145deg, #4169e1, #1e3a8a);
     background-image:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 2px, transparent 2px),
-        radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1) 1px, transparent 1px);
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 2px, transparent 2px),
+        radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
     justify-content: center;
 }
 
@@ -2338,7 +2501,8 @@ body {
     color: #333;
     border: 3px solid #e9ecef;
     transform: rotateY(180deg);
-    padding: 0; /* Retirer le padding pour que l'image prenne toute la place */
+    padding: 0;
+    /* Retirer le padding pour que l'image prenne toute la place */
 }
 
 .interactive-card.revealed .card-inner {
@@ -2464,7 +2628,8 @@ body {
     align-items: center;
 }
 
-.btn-add-deck, .btn-close-booster {
+.btn-add-deck,
+.btn-close-booster {
     padding: 1rem 2rem;
     border: none;
     border-radius: 15px;
@@ -2502,15 +2667,23 @@ body {
 
 /* Animations */
 @keyframes fade {
-    0% { opacity: 0.6; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 0.6;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 @keyframes ultraRarePulse {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 25px rgba(155, 89, 182, 0.7);
         transform: scale(1);
     }
+
     50% {
         box-shadow: 0 0 35px rgba(155, 89, 182, 0.9);
         transform: scale(1.02);
@@ -2518,10 +2691,13 @@ body {
 }
 
 @keyframes secretRarePulse {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 30px rgba(231, 76, 60, 0.8);
         transform: scale(1);
     }
+
     50% {
         box-shadow: 0 0 40px rgba(231, 76, 60, 1);
         transform: scale(1.03);
@@ -2533,6 +2709,7 @@ body {
         transform: translateX(100%);
         opacity: 0;
     }
+
     100% {
         transform: translateX(0);
         opacity: 1;
@@ -2573,7 +2750,8 @@ body {
         gap: 3rem;
         padding: 0 3rem;
         margin: 0 auto 3rem auto;
-        overflow: visible; /* S'assurer que les bordures ne sont pas coupées */
+        overflow: visible;
+        /* S'assurer que les bordures ne sont pas coupées */
     }
 
     .interactive-card {
@@ -2639,7 +2817,8 @@ body {
         height: 210px;
     }
 
-    .card-image, .card-placeholder {
+    .card-image,
+    .card-placeholder {
         width: 80px;
         height: 80px;
     }
@@ -2649,7 +2828,8 @@ body {
         gap: 1rem;
     }
 
-    .btn-add-deck, .btn-close-booster {
+    .btn-add-deck,
+    .btn-close-booster {
         width: 100%;
         max-width: 300px;
     }
@@ -2665,7 +2845,8 @@ body {
         height: 180px;
     }
 
-    .card-image, .card-placeholder {
+    .card-image,
+    .card-placeholder {
         width: 60px;
         height: 60px;
     }
@@ -2678,4 +2859,31 @@ body {
         font-size: 0.8rem;
         padding: 0.2rem 0.5rem;
     }
+}
+
+.cards-container-hand {
+    margin-left: auto;
+    margin-right: auto;
+    width: 200px;
+    height: 200px;
+    padding: 1rem 0;
+    border: 2px dashed #dee2e6;
+    display: flex;
+    justify-content: center;
+    align-self: start;
+}
+
+.battle-Modal-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container-game {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+    /* Optionnel : espace entre les colonnes */
 }

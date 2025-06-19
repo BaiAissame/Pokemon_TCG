@@ -22,58 +22,62 @@
 </head>
 
 <body>
-    <nav class="header">
-        <div class="logo">⚡ Pokemon TCG Pro ⚡</div>
-        <div class="player-info">
-            <div class="trainer-name">Dresseur: <span id="trainerName">Ash Ketchup</span></div>
+    <header>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link">🏠 Accueil</a>
+            <a href="battle.html" class="nav-link active">⚔️ Combat</a>
+            <a href="collection.html" class="nav-link">📚 Collection</a>
             <div>💰 Crédits: <span id="credits">100</span></div>
-        </div>
-    </nav>
+        </nav>
+    </header>
 
-    <nav class="main-nav">
-        <a href="index.html" class="nav-link">🏠 Accueil</a>
-        <a href="battle.html" class="nav-link active">⚔️ Combat</a>
-        <a href="collection.html" class="nav-link">📚 Collection</a>
-    </nav>
+
 
     <main class="main-container">
         <div class="game-area">
+            <div class="container-game">
+                <div class="deck-section" style="margin-top: 1rem;">
+                    <div class="deck">
+                        <h3>🎴 Ma Pioche (<span id="deckCount">0</span>)</h3>
+                        <div class="cards-container" id="deck"></div>
+                    </div>
 
-            <div class="deck-section" style="margin-top: 1rem;">
-                <div class="deck">
-                    <h3>🎴 Ma Pioche (<span id="deckCount">0</span>)</h3>
-                    <div class="cards-container" id="deck"></div>
-                </div>
-
-                <div class="deck">
+                    <div class="deck" style="display: none;">
                     <h3>🃏 Ma Main
                         (<span id="handCount">0</span>)
                     </h3>
-                    <div class="cards-container" id="hand"></div>
+                    <!-- <div class="cards-container-hand" id="hand"></div> -->
+                </div>
+                </div>
+
+                <div class="battle-zone" id="battleZone">
+                    <h3>⚔️ Zone de Combat</h3>
+                    <div class="battle-hand-zone">
+                        <div class="player-battle">
+                            <h4>Votre Carte Active</h4>
+                            <div class="cards-container-hand" id="hand"></div>
+                            <div id="playerActiveCard"></div>
+                            <div>PV: <span id="playerHP">100</span></div>
+                            <!-- <button class="btn-battle" id="chooseActiveBtn" onclick="app.chooseActiveCard()">Choisir une
+                            carte active</button> -->
+                        </div>
+                        <div class="opponent-battle">
+                            <h4 id="opponentName">Adversaire</h4>
+                            <div id="opponentActiveCard"></div>
+                            <div>PV: <span id="opponentHP">100</span></div>
+                            <!-- <button class="btn-battle" id="chooseOpponentBtn" onclick="app.chooseOpponent()">Choisir un
+                            adversaire</button> -->
+                        </div>
+                    </div>
+                    <div style="margin-top:1rem;">
+                        <button class="btn-battle" id="attackBtn" onclick="app.attack()" disabled>Attaquer</button>
+                    </div>
+                    <div class="battle-log" id="battleLog"
+                        style="margin-top:1rem; background:#f8f9fa; border-radius:8px; padding:1rem; min-height:60px; max-height:120px; overflow-y:auto;">
+                    </div>
                 </div>
             </div>
 
-            <div class="battle-zone" id="battleZone" style="margin:2rem 0;">
-                <h3>⚔️ Zone de Combat</h3>
-                <div class="battle-hand-zone">
-                    <div class="player-battle">
-                        <h4>Votre Carte Active</h4>
-                        <div id="playerActiveCard"></div>
-                        <div>PV: <span id="playerHP">100</span></div>
-                        <button class="btn-battle" id="chooseActiveBtn" onclick="app.chooseActiveCard()">Choisir une carte active</button>
-                    </div>
-                    <div class="opponent-battle">
-                        <h4>Adversaire</h4>
-                        <div id="opponentActiveCard"></div>
-                        <div>PV: <span id="opponentHP">100</span></div>
-                        <button class="btn-battle" id="chooseOpponentBtn" onclick="app.chooseOpponent()">Choisir un adversaire</button>
-                    </div>
-                </div>
-                <div style="margin-top:1rem;">
-                    <button class="btn-battle" id="attackBtn" onclick="app.attack()" disabled>Attaquer</button>
-                </div>
-                <div class="battle-log" id="battleLog" style="margin-top:1rem; background:#f8f9fa; border-radius:8px; padding:1rem; min-height:60px; max-height:120px; overflow-y:auto;"></div>
-            </div>
         </div>
 
         <div class="sidebar">
@@ -116,12 +120,35 @@
 
         <!-- Modal for card details -->
         <div id="cardModal" class="modal">
-            <div class="modal-content" style="display: flex;flex-direction: column;align-items: center; background: transparent;">
+            <div class="modal-content"
+                style="display: flex;flex-direction: column;align-items: center; background: transparent;">
                 <button class="close-btn" onclick="app.closeModal()">&times;</button>
                 <div class="card-detail" id="cardDetail"></div>
+            </div>
+        </div>
+
+        <div id="battle-Modal" class="modal">
+            <div class="battle-Modal-content" style="color: #f8f9fa; text-align: center;">
+                <div style="background-color: rgba(109, 109, 109, 0.8); padding: 2rem; border-radius: 8px;">
+                    <h2 style="margin-bottom: 1rem;"></h2>
+                    <p id="battle-modal-message"></p>
+                    <p style="margin-top: 2rem;">Donnez une note à votre adversaire</p>
+                    <div id="rating-stars" style="font-size: 2rem; margin: 1rem 0;">
+                        <span class="star" data-value="1" style="cursor:pointer;">☆</span>
+                        <span class="star" data-value="2" style="cursor:pointer;">☆</span>
+                        <span class="star" data-value="3" style="cursor:pointer;">☆</span>
+                        <span class="star" data-value="4" style="cursor:pointer;">☆</span>
+                        <span class="star" data-value="5" style="cursor:pointer;">☆</span>
+                    </div>
+                    <button id="submit-rating"
+                        style="margin-top:1rem; padding:0.5rem 1rem; border:none; border-radius:4px; background:#ffc107; color:#222; font-weight:bold; cursor:pointer;">
+                        Envoyer la note
+                    </button>
+                </div>
             </div>
         </div>
     </main>
 
 </body>
+
 </html>

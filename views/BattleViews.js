@@ -1,3 +1,4 @@
+
 export default class BattleViews {
     constructor() {
         this.setupEventListeners();
@@ -6,12 +7,12 @@ export default class BattleViews {
 
 
     setupEventListeners() {
-        document.querySelectorAll(".star").forEach((star) => {
-            star.addEventListener("click", (e) => {
-                const rating = parseInt(e.target.dataset.rating);
-                this.setRating(rating);
-            });
-        });
+        // document.querySelectorAll(".star").forEach((star) => {
+        //     star.addEventListener("click", (e) => {
+        //         const rating = parseInt(e.target.dataset.rating);
+        //         this.setRating(rating);
+        //     });
+        // });
 
         document.querySelectorAll(".modal").forEach((modal) => {
             modal.addEventListener("click", (e) => {
@@ -20,12 +21,65 @@ export default class BattleViews {
                 }
             });
         });
+
+        const stars = document.querySelectorAll('#rating-stars .star');
+        let selectedRating = 0;
+
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                selectedRating = parseInt(this.dataset.value);
+                stars.forEach((s, i) => {
+                    s.textContent = i < selectedRating ? '★' : '☆';
+                });
+                console.log(selectedRating);
+            });
+        });
+
+        document.getElementById('submit-rating').addEventListener('click', function () {
+
+            if (selectedRating === 0) {
+                alert("Veuillez sélectionner une note !");
+                return;
+            }
+
+            const trainer = JSON.parse(localStorage.getItem('selectedTrainer'));
+            const trainers = JSON.parse(localStorage.getItem('trainers'));
+            trainer.rating = (trainer.rating * trainer.battles + selectedRating) / (trainer.battles + 1);
+            trainer.rating = trainer.rating.toFixed(1);
+            trainer.battles++
+            trainers.forEach((value, index) => {
+                if (value.id === trainer.id) {
+                    trainers[index] = trainer;
+                }
+            })
+
+            localStorage.setItem('trainers', JSON.stringify(trainers));
+      
+            localStorage.removeItem('selectedCard');
+            localStorage.removeItem('trainerHP');
+            localStorage.removeItem('cardTrainer');
+            localStorage.removeItem('selectedTrainer');
+
+            // Ici, tu peux envoyer la note au serveur ou la traiter comme tu veux
+            alert("Note envoyée : " + selectedRating + " étoile(s)");
+            // Fermer la modal si besoin
+            window.location = "/"; // Rediriger vers la page d'accueil ou une autre page
+        });
+
     }
 
     setupDragAndDrop() {
-        const containers = document.querySelectorAll(".cards-container");
+        // const containers = document.querySelectorAll(".cards-container");
+        const containersHand = document.querySelectorAll(".cards-container-hand");
 
-        containers.forEach((container) => {
+        // containers.forEach((container) => {
+        //     container.addEventListener("dragover", this.handleDragOver.bind(this));
+        //     container.addEventListener("drop", this.handleDrop.bind(this));
+        //     container.addEventListener("dragenter", this.handleDragEnter.bind(this));
+        //     container.addEventListener("dragleave", this.handleDragLeave.bind(this));
+        // });
+
+        containersHand.forEach((container) => {
             container.addEventListener("dragover", this.handleDragOver.bind(this));
             container.addEventListener("drop", this.handleDrop.bind(this));
             container.addEventListener("dragenter", this.handleDragEnter.bind(this));
@@ -64,10 +118,18 @@ export default class BattleViews {
         const targetContainer = e.currentTarget.id;
 
         if (targetContainer === "hand") {
-            window.app.moveCardToHand(cardId);
-        } else if (targetContainer === "deck") {
-            window.app.moveCardToDeck(cardId);
+            if (e.currentTarget.children.length == 0) window.app.moveCardToHand(cardId);
+            else if (e.currentTarget.children[0].dataset.cardId == cardId) return;
+            else {
+                window.app.moveCardToDeck(e.currentTarget.children[0].dataset.cardId);
+                window.app.moveCardToHand(cardId);
+            }
+            if (typeof window.app.chooseActiveCard === "function") {
+                window.app.chooseActiveCard();
+            }
         }
+        // else if (targetContainer === "deck") {
+        // }
     }
 
     onStateChange(gameState) {
@@ -157,10 +219,11 @@ export default class BattleViews {
             cardEl.innerHTML = `
                 <div class="card-info">
                     ${card.image
-                        ? `<img src="${card.image}" alt="${card.name}" class="card-image full-cover" loading="lazy"
-                               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
-                        : ""
-                    }
+                    ? `<img src="${card.image}" alt="${card.name}" class="card-image full-cover" loading="lazy"
+                            draggable="false"           
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
+                    : ""
+                }
                     <div class="card-placeholder" style="${card.image ? 'display:none' : ''}">
                         <div class="card-name">${card.name}</div>
                         <div class="card-type">${card.types?.[0]?.name || 'Unknown'}</div>
@@ -202,11 +265,11 @@ export default class BattleViews {
     }
 
     showCardDetails(card) {
-      const modal = document.getElementById("cardModal");
-      const cardDetail = document.getElementById("cardDetail");
+        const modal = document.getElementById("cardModal");
+        const cardDetail = document.getElementById("cardDetail");
 
-      const attacksHtml = card.attacks && card.attacks.length > 0
-        ? `<div style="margin-top: 1rem;">
+        const attacksHtml = card.attacks && card.attacks.length > 0
+            ? `<div style="margin-top: 1rem;">
              <h4 style="color: #e74c3c; margin-bottom: 0.8rem; font-size: 1.1em; border-bottom: 1px solid #e74c3c; padding-bottom: 0.3rem;">⚔️ Attaques</h4>
              <div style="display: grid; gap: 0.6rem; max-height: 200px; overflow-y: auto; padding-right: 0.5rem;">
                ${card.attacks.slice(0, 4).map((attack, index) => `
@@ -278,10 +341,10 @@ export default class BattleViews {
                ${card.attacks.length > 4 ? `<div style="text-align: center; color: #6c757d; font-size: 0.8em;">... et ${card.attacks.length - 4} autres attaques</div>` : ''}
              </div>
            </div>`
-        : '<div style="margin-top: 1rem; text-align: center; color: #6c757d; font-size: 0.9em;"><em>❌ Aucune attaque</em></div>';
+            : '<div style="margin-top: 1rem; text-align: center; color: #6c757d; font-size: 0.9em;"><em>❌ Aucune attaque</em></div>';
 
-      const weaknessHtml = card.weaknesses && card.weaknesses.length > 0
-        ? `<div style="margin-top: 0.8rem;">
+        const weaknessHtml = card.weaknesses && card.weaknesses.length > 0
+            ? `<div style="margin-top: 0.8rem;">
              <h6 style="color: #e67e22; margin-bottom: 0.4rem; font-size: 0.9em;">🔥 Faiblesses</h6>
              <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
                ${card.weaknesses.slice(0, 3).map(w => `
@@ -299,10 +362,10 @@ export default class BattleViews {
                ${card.weaknesses.length > 3 ? '<span style="font-size: 0.7em; color: #6c757d;">...</span>' : ''}
              </div>
            </div>`
-        : '';
+            : '';
 
-      const resistanceHtml = card.resistances && card.resistances.length > 0
-        ? `<div style="margin-top: 0.8rem;">
+        const resistanceHtml = card.resistances && card.resistances.length > 0
+            ? `<div style="margin-top: 0.8rem;">
              <h6 style="color: #27ae60; margin-bottom: 0.4rem; font-size: 0.9em;">🛡️ Résistances</h6>
              <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
                ${card.resistances.slice(0, 3).map(r => `
@@ -320,9 +383,9 @@ export default class BattleViews {
                ${card.resistances.length > 3 ? '<span style="font-size: 0.7em; color: #6c757d;">...</span>' : ''}
              </div>
            </div>`
-        : '';
+            : '';
 
-      cardDetail.innerHTML = `
+        cardDetail.innerHTML = `
         <div style="max-width: 500px; margin: 0 auto;">
           <div style="text-align: center; margin-bottom: 1rem;">
             <h3 style="color: #2c3e50; margin-bottom: 0.8rem; font-size: 1.3em; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
@@ -373,69 +436,66 @@ export default class BattleViews {
         </div>
       `;
 
-      modal.style.display = "block";
+        modal.style.display = "block";
     }
 
     updateBattleZone(battleState) {
         const playerZone = document.getElementById('playerActiveCard');
         const opponentZone = document.getElementById('opponentActiveCard');
         const playerHP = document.getElementById('playerHP');
+        const opponentName = document.getElementById('opponentName');
         const opponentHP = document.getElementById('opponentHP');
         const log = document.getElementById('battleLog');
+
+        opponentName.textContent = battleState.opponentName || 'Adversaire';
 
         if (battleState.playerActiveCard) {
             playerZone.innerHTML = `
                 <div class="battle-active-card">
-                    ${battleState.playerActiveCard.image
-                        ? `<img src="${battleState.playerActiveCard.image}" alt="${battleState.playerActiveCard.name}"
-                               class="battle-card-image" style="cursor:pointer;"
-                               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
-                        : ''
-                    }
                     <div class="battle-card-fallback" style="${battleState.playerActiveCard.image ? 'display:none' : ''}">
                         <div class="card-name">${battleState.playerActiveCard.name}</div>
                         <div class="card-type">${battleState.playerActiveCard.types?.[0] || 'Pokemon'}</div>
                     </div>
                     <div class="battle-card-name">${battleState.playerActiveCard.name}</div>
                     ${battleState.playerActiveCard.attacks?.length > 0
-                        ? `<div class="battle-attacks-preview">
+                    ? `<div class="battle-attacks-preview">
                              ${battleState.playerActiveCard.attacks.slice(0, 2).map(attack =>
-                                `<small>${attack.name}: ${attack.damage || '?'}</small>`
-                             ).join(' • ')}
+                        `<small>${attack.name}: ${attack.damage || '?'}</small>`
+                    ).join(' • ')}
                            </div>`
-                        : '<small>Aucune attaque</small>'
-                    }
+                    : '<small>Aucune attaque</small>'
+                }
                 </div>
             `;
             playerHP.textContent = battleState.playerHP;
-            const img = playerZone.querySelector('img, .battle-card-fallback');
-            if (img) {
-                img.addEventListener('click', () => window.app.showCardDetails(battleState.playerActiveCard));
-            }
+            // const img = playerZone.querySelector('img, .battle-card-fallback');
+            // if (img) {
+            //     img.addEventListener('click', () => window.app.showCardDetails(battleState.playerActiveCard));
+            // }
         }
 
         if (battleState.opponentActiveCard) {
             opponentZone.innerHTML = `
                 <div class="battle-active-card">
                     ${battleState.opponentActiveCard.image
-                        ? `<img src="${battleState.opponentActiveCard.image}" alt="${battleState.opponentActiveCard.name}"
+                    ? `<img src="${battleState.opponentActiveCard.image}" alt="${battleState.opponentActiveCard.name}"
                                class="battle-card-image" style="cursor:pointer;"
                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
-                        : ''
-                    }
+                    : ''
+                }
                     <div class="battle-card-fallback" style="${battleState.opponentActiveCard.image ? 'display:none' : ''}">
                         <div class="card-name">${battleState.opponentActiveCard.name}</div>
                         <div class="card-type">${battleState.opponentActiveCard.types?.[0] || 'Pokemon'}</div>
                     </div>
                     <div class="battle-card-name">${battleState.opponentActiveCard.name}</div>
                     ${battleState.opponentActiveCard.attacks?.length > 0
-                        ? `<div class="battle-attacks-preview">
+                    ? `<div class="battle-attacks-preview">
                              ${battleState.opponentActiveCard.attacks.slice(0, 2).map(attack =>
-                                `<small>${attack.name}: ${attack.damage || '?'}</small>`
-                             ).join(' • ')}
+                        `<small>${attack.name}: ${attack.damage || '?'}</small>`
+                    ).join(' • ')}
                            </div>`
-                        : '<small>Aucune attaque</small>'
-                    }
+                    : '<small>Aucune attaque</small>'
+                }
                 </div>
             `;
             opponentHP.textContent = battleState.opponentHP;
@@ -472,11 +532,11 @@ export default class BattleViews {
             cardDiv.innerHTML = `
                 <div class="choose-active-card">
                     ${card.image
-                        ? `<img src="${card.image}" alt="${card.name}"
+                    ? `<img src="${card.image}" alt="${card.name}"
                                style="width:80px;height:110px;border-radius:8px;box-shadow:0 2px 8px #aaa;"
                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
-                        : ''
-                    }
+                    : ''
+                }
                     <div class="card-fallback" style="${card.image ? 'display:none' : ''};text-align:center;padding:1rem;background:#f8f9fa;border-radius:8px;width:80px;height:110px;display:flex;flex-direction:column;justify-content:center;">
                         <div style="font-weight:bold;font-size:0.8rem;">${card.name}</div>
                         <div style="font-size:0.7rem;color:#666;">${card.types?.[0] || 'Pokemon'}</div>
@@ -485,11 +545,11 @@ export default class BattleViews {
                         <div style="font-weight:bold;font-size:0.9rem;">${card.name}</div>
                         <div style="font-size:0.8rem;color:#666;">PV: ${card.getHP()}</div>
                         ${card.attacks?.length > 0
-                            ? `<div style="font-size:0.7rem;color:#e74c3c;margin-top:0.2rem;">
+                    ? `<div style="font-size:0.7rem;color:#e74c3c;margin-top:0.2rem;">
                                  ${card.attacks.length} attaque${card.attacks.length > 1 ? 's' : ''}
                                </div>`
-                            : '<div style="font-size:0.7rem;color:#999;">Aucune attaque</div>'
-                        }
+                    : '<div style="font-size:0.7rem;color:#999;">Aucune attaque</div>'
+                }
                     </div>
                 </div>
             `;
@@ -529,7 +589,7 @@ export default class BattleViews {
             btn.innerHTML = `
                 <span style='font-size:1.1em;font-weight:bold;color:#c0392b;'>${attack.name}</span>
                 <span style='color:#888;font-size:0.95em;'>Dégâts : <b>${attack.damage || 0}</b></span>
-                ${attack.cost ? `<span style='color:#2980b9;font-size:0.9em;'>Coût : ${attack.cost.map(c=>c.name||c).join(', ')}</span>` : ''}
+                ${attack.cost ? `<span style='color:#2980b9;font-size:0.9em;'>Coût : ${attack.cost.map(c => c.name || c).join(', ')}</span>` : ''}
                 <span style='font-size:0.95em;color:#555;'>${attack.text || ''}</span>
             `;
             btn.onmouseover = () => btn.style.background = 'linear-gradient(145deg,#f8d7da,#f5c6cb)';
@@ -734,5 +794,13 @@ export default class BattleViews {
                 }, 500);
             }
         }, 30000);
+    }
+
+    setRating(rating) {
+        const stars = document.querySelectorAll("#rating-stars .star");
+        stars.forEach((star, index) => {
+            star.classList.toggle("active", index < rating);
+        });
+        window.app.setSelectedRating(rating);
     }
 }

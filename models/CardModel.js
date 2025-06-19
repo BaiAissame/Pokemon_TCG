@@ -6,6 +6,7 @@ class CardModel {
     this.image = data.images?.large || data.images?.small || data.image || '';
     this.types = data.types || [];
     this.hp = parseInt(data.hp) || 100;
+    this.battleHP = parseInt(data.hp) || 0;
     this.attacks = data.attacks || [];
     this.weaknesses = data.weaknesses || [];
     this.resistances = data.resistances || [];
@@ -65,6 +66,10 @@ class CardModel {
 
   getHP() {
     return this.hp || "?";
+  }
+
+  getBattleHP() {
+    return this.battleHP || 0;
   }
 
   getAttackPower() {

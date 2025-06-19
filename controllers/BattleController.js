@@ -21,6 +21,7 @@ export default class BattleController {
         this.battleState = {
             inBattle: false,
             currentOpponent: null,
+            opponentName: 'adversaire',
             playerActiveCard: null,
             opponentActiveCard: null,
             playerHP: 100,
@@ -42,12 +43,20 @@ export default class BattleController {
         if (this.gameState.deck.length === 0 && this.gameState.hand.length === 0) {
             await this.drawCards();
         }
+
+        this.chooseOpponent()
+        this.chooseActiveCard();
+        // this.music();
     }
 
     startTimer() {
         setInterval(() => {
             this.battleViews.updateTimer(this.gameState);
         }, 1000);
+    }
+
+    music() {
+        this.soundService.playMusic();
     }
 
     async drawCards() {
@@ -121,34 +130,75 @@ export default class BattleController {
             this.battleViews.onError("Vous n'avez aucune carte en main !");
             return;
         }
-        this.battleViews.showChooseActiveModal(this.gameState.hand, (selectedCard) => {
-            if (
-                this.battleState.playerActiveCard &&
-                this.battleState.playerActiveCard.id === selectedCard.id &&
-                this.battleState.playerHP < this.battleState.playerActiveCard.getHP()
-            ) {
+
+        // this.battleViews.showChooseActiveModal(this.gameState.hand, (selectedCard) => {
+        // if (
+        //     this.battleState.playerActiveCard &&
+        //     this.battleState.playerActiveCard.id === selectedCard.id &&
+        //     this.battleState.playerHP < this.battleState.playerActiveCard.getHP()
+        // ) {
+        //     // this.updateBattleZone();
+        //     // this.checkAttackReady();
+        //     // return;
+        // }
+        if (localStorage.getItem('selectedCard') == null) {
+
+            const data = {
+                id: this.gameState.hand[0].id,
+                battleHp: this.gameState.hand[0].getBattleHP()
+            }
+            localStorage.setItem('selectedCard', JSON.stringify([data]));
+        }
+
+        const playerCards = JSON.parse(localStorage.getItem('selectedCard'));
+
+        this.battleState.playerActiveCard = this.gameState.hand[0];
+
+        // persister la carte active (point de vie)
+        let isPrensentCard = false;
+
+        playerCards.forEach(cardData => {
+            if (cardData.id === this.gameState.hand[0].id) {
+                this.battleState.playerHP = cardData.battleHp;
+
                 this.updateBattleZone();
                 this.checkAttackReady();
-                return;
+                this.soundService.playSound('cardPlay');
+                isPrensentCard = true;
             }
-            this.battleState.playerActiveCard = selectedCard;
-            this.battleState.playerHP = selectedCard.getHP();
+
+        })
+
+        if (!isPrensentCard) {
+            playerCards.push({
+                id: this.gameState.hand[0].id,
+                battleHp: this.gameState.hand[0].getBattleHP()
+            });
+            localStorage.setItem('selectedCard', JSON.stringify(playerCards));
+            this.battleState.playerHP = this.gameState.hand[0].getBattleHP();
             this.updateBattleZone();
             this.checkAttackReady();
-
             this.soundService.playSound('cardPlay');
-        });
+        }
+        // });
     }
 
     async chooseOpponent() {
-        const trainers = this.gameState.trainers.length > 0 ? this.gameState.trainers : [
-            { name: 'Rival', avatar: '', rating: 3.5 }
-        ];
-        const randomTrainer = trainers[Math.floor(Math.random() * trainers.length)];
+        const randomTrainer = JSON.parse(localStorage.getItem('selectedTrainer'))
         this.battleState.currentOpponent = randomTrainer;
-        const cards = await this.pokemonAPI.getRandomCards(1);
-        this.battleState.opponentActiveCard = new CardModel(cards[0]);
-        this.battleState.opponentHP = this.battleState.opponentActiveCard.getHP();
+        if (localStorage.getItem('cardTrainer') == null) {
+            const cards = await this.pokemonAPI.getRandomCards(1);
+            localStorage.setItem('cardTrainer', JSON.stringify(cards[0]));
+        }
+        const card = JSON.parse(localStorage.getItem('cardTrainer'));
+
+        this.battleState.opponentName = randomTrainer.name
+        this.battleState.opponentActiveCard = new CardModel(card);
+
+        if (localStorage.getItem('trainerHP') == null) {
+            localStorage.setItem('trainerHP', JSON.stringify(this.battleState.opponentActiveCard.getHP()));
+        }
+        this.battleState.opponentHP = JSON.parse(localStorage.getItem('trainerHP'));
         this.updateBattleZone();
         this.checkAttackReady();
     }
@@ -184,6 +234,7 @@ export default class BattleController {
             }
             dmg = this.applyWeaknessResistance(dmg, this.battleState.playerActiveCard, this.battleState.opponentActiveCard);
             this.battleState.opponentHP = Math.max(0, this.battleState.opponentHP - dmg);
+            localStorage.setItem('trainerHP', JSON.stringify(this.battleState.opponentHP));
             this.battleState.battleLog.push(`${this.battleState.playerActiveCard.name} utilise ${attack.name} pour ${dmg} dégâts !`);
 
             this.addCombo();
@@ -207,10 +258,10 @@ export default class BattleController {
                 this.soundService.playSound('win');
                 this.gameState.updateStatistics('totalWins', 1);
                 this.gameState.updateStatistics('currentWinStreak', 1);
-                this.achievementService.checkAchievements(this.battleState);
-
+                // this.achievementService.checkAchievements(this.battleState);
                 this.updateBattleZone();
                 this.resetCombo();
+                this.battleResult(true);
                 return;
             }
             this.battleState.turn = 'opponent';
@@ -251,6 +302,15 @@ export default class BattleController {
         }
         dmg = this.applyWeaknessResistance(dmg, this.battleState.opponentActiveCard, this.battleState.playerActiveCard);
         this.battleState.playerHP = Math.max(0, this.battleState.playerHP - dmg);
+
+        const playerCards = JSON.parse(localStorage.getItem('selectedCard'));
+        playerCards.forEach(cardData => {
+            if (cardData.id === this.battleState.playerActiveCard.id) {
+                cardData.battleHp = this.battleState.playerHP;
+                localStorage.setItem('selectedCard', JSON.stringify(playerCards));
+            }
+        });
+
         this.battleState.battleLog.push(`${this.battleState.opponentActiveCard.name} utilise ${attack ? attack.name : 'Attaque'} pour ${dmg} dégâts !`);
         this.updateBattleZone();
         if (this.battleState.playerHP <= 0) {
@@ -260,8 +320,8 @@ export default class BattleController {
             this.gameState.updateStatistics('totalLosses', 1);
             this.gameState.statistics.currentWinStreak = 0; // Reset win streak
             this.resetCombo();
-
             this.updateBattleZone();
+            this.battleResult(false);
             return;
         }
         this.battleState.turn = 'player';
@@ -295,5 +355,33 @@ export default class BattleController {
             console.error('Erreur lors de l\'ajout des cartes:', error);
             this.battleViews.onError('Erreur lors de l\'ajout des cartes au deck.');
         }
+    }
+
+
+    setSelectedRating(rating) {
+        this.selectedRating = rating;
+    }
+
+
+    battleResult(you_win) {
+        setTimeout(() => {
+            const data = JSON.parse(localStorage.getItem('pokemonTCG_gameState'));
+            data.deck.push(data.hand[0]);
+            data.hand = [];
+            localStorage.setItem('pokemonTCG_gameState', JSON.stringify(data));
+            const modal = document.getElementById('battle-Modal')
+            if (you_win) {
+                modal.querySelector('h2').textContent = '🎉 Victoire 🎉';
+                modal.querySelector('#battle-modal-message').textContent = `Vous avez gagné contre ${this.battleState.opponentName} !`;
+            }
+            else {
+                modal.querySelector('h2').textContent = '💀 Défaite 💀';
+                modal.querySelector('#battle-modal-message').textContent = `Vous avez perdu contre ${this.battleState.opponentName}.`;
+                this.soundService.looserSound();
+            }
+
+            modal.style.display = 'block';
+
+        }, 1500);
     }
 }

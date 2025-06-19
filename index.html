@@ -17,23 +17,26 @@
 </head>
 
 <body>
-    <div class="header">
+    <!-- <div class="header">
         <div class="logo">⚡ Pokemon TCG Pro ⚡</div>
         <div class="player-info">
             <div class="trainer-name">Dresseur: <span id="trainerName">Ash Ketchup</span></div>
             <div>💰 Crédits: <span id="credits">100</span></div>
         </div>
-    </div>
+    </div> -->
+    <header>
+        <nav class="main-nav">
+            <span class="nav-link active">🏠 Accueil</span>
+            <span href="battle.html" class="nav-link">⚔️ Combat</span>
+            <span href="collection.html" class="nav-link">📚 Collection</span>
+        </nav>
+    </header>
 
-    <nav class="main-nav">
-        <a href="index.html" class="nav-link active">🏠 Accueil</a>
-        <a href="battle.html" class="nav-link">⚔️ Combat</a>
-        <a href="collection.html" class="nav-link">📚 Collection</a>
-    </nav>
+    <main>
 
-    <div class="main-container">
-        <div class="game-area">
-            <!-- <div class="deck-section">
+        <div class="main-container">
+            <div class="game-area">
+                <!-- <div class="deck-section">
 
 
                 <div class="deck">
@@ -49,84 +52,86 @@
                 </div>
             </div> -->
 
-            <div class="battle-section" id="battle-section">
-                <h3>⚔️ Zone de Combat</h3>
-                <div class="trainers-list" id="trainersList"></div>
-                <button class="btn" onclick="app.refreshTrainers()">🔄 Actualiser les Dresseurs</button>
-            </div>
-        </div>
-
-        <div class="sidebar">
-            <!-- Section de sélection des boosters sera ajoutée dynamiquement -->
-
-            <div class="action-panel">
-                <h3>🎯 Actions Rapides</h3>
-                <div id="drawTimer" class="timer">Prêt à tirer!</div>
-                <button class="btn" id="drawBtn" onclick="app.drawCards()">
-                    🎴 Ouvrir le Booster Sélectionné
-                </button>
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    Ouverture du booster...
+                <div class="battle-section" id="battle-section">
+                    <h3>⚔️ Zone de Combat</h3>
+                    <div class="trainers-list" id="trainersList"></div>
+                    <button class="btn" onclick="app.refreshTrainers()">🔄 Actualiser les Dresseurs</button>
                 </div>
-                <div id="message"></div>
             </div>
 
-            <div class="action-panel">
-                <h3>📊 Statistiques</h3>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalCards">0</div>
-                        <div class="stat-label">Cartes totales</div>
+            <div class="sidebar">
+                <!-- Section de sélection des boosters sera ajoutée dynamiquement -->
+
+                <div class="action-panel">
+                    <h3>🎯 Actions Rapides</h3>
+                    <div id="drawTimer" class="timer">Prêt à tirer!</div>
+                    <button class="btn" id="drawBtn" onclick="app.drawCards()">
+                        🎴 Ouvrir le Booster Sélectionné
+                    </button>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        Ouverture du booster...
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="rareCards">0</div>
-                        <div class="stat-label">Cartes rares</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="boosters">0</div>
-                        <div class="stat-label">Boosters ouverts</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="battles">0</div>
-                        <div class="stat-label">Combats</div>
-                    </div>
+                    <div id="message"></div>
                 </div>
-                <p><strong>Dernière session:</strong> <span id="lastDraw">Jamais</span></p>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal for card details -->
-    <div id="cardModal" class="modal">
-        <div class="modal-content" style="display: flex;flex-direction: column;align-items: center;">
-            <button class="close-btn" onclick="app.closeModal()">&times;</button>
-            <!-- <h2 style="text-align: center;">Détails de la Carte</h2> -->
-            <div class="card-detail" id="cardDetail"></div>
-        </div>
-    </div>
-
-    <!-- Modal for trainer interaction -->
-    <div id="trainerModal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="app.closeTrainerModal()">&times;</button>
-            <h2 id="trainerModalTitle">Interaction avec le Dresseur</h2>
-            <div class="comment-section">
-                <h4>Laisser un commentaire:</h4>
-                <textarea class="comment-input" id="commentInput"
-                    placeholder="Votre commentaire sur ce dresseur..."></textarea>
-                <h4>Note:</h4>
-                <div class="rating" id="rating">
-                    <span class="star" data-rating="1">⭐</span>
-                    <span class="star" data-rating="2">⭐</span>
-                    <span class="star" data-rating="3">⭐</span>
-                    <span class="star" data-rating="4">⭐</span>
-                    <span class="star" data-rating="5">⭐</span>
+                <div class="action-panel">
+                    <h3>📊 Statistiques</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalCards">0</div>
+                            <div class="stat-label">Cartes totales</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="rareCards">0</div>
+                            <div class="stat-label">Cartes rares</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="boosters">0</div>
+                            <div class="stat-label">Boosters ouverts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="battles">0</div>
+                            <div class="stat-label">Combats</div>
+                        </div>
+                    </div>
+                    <p><strong>Dernière session:</strong> <span id="lastDraw">Jamais</span></p>
                 </div>
-                <button class="btn" onclick="app.submitTrainerFeedback()">💾 Envoyer</button>
             </div>
         </div>
-    </div>
+
+        <!-- Modal for card details -->
+        <div id="cardModal" class="modal">
+            <div class="modal-content" style="display: flex;flex-direction: column;align-items: center;">
+                <button class="close-btn" onclick="app.closeModal()">&times;</button>
+                <!-- <h2 style="text-align: center;">Détails de la Carte</h2> -->
+                <div class="card-detail" id="cardDetail"></div>
+            </div>
+        </div>
+
+        <!-- Modal for trainer interaction -->
+        <div id="trainerModal" class="modal">
+            <div class="modal-content">
+                <button class="close-btn" onclick="app.closeTrainerModal()">&times;</button>
+                <h2 id="trainerModalTitle">Interaction avec le Dresseur</h2>
+                <div class="comment-section">
+                    <h4>Laisser un commentaire:</h4>
+                    <textarea class="comment-input" id="commentInput"
+                        placeholder="Votre commentaire sur ce dresseur..."></textarea>
+                    <h4>Note:</h4>
+                    <div class="rating" id="rating">
+                        <span class="star" data-rating="1">⭐</span>
+                        <span class="star" data-rating="2">⭐</span>
+                        <span class="star" data-rating="3">⭐</span>
+                        <span class="star" data-rating="4">⭐</span>
+                        <span class="star" data-rating="5">⭐</span>
+                    </div>
+                    <button class="btn" onclick="app.submitTrainerFeedback()">💾 Envoyer</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
 
     <!-- Scripts MVC -->
     <!-- Ajoutez type="module" à TOUS les scripts -->

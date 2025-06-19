@@ -83,13 +83,13 @@ class AchievementService {
 
         this.achievements.forEach(achievement => {
             const isUnlocked = this.gameState.achievements?.some(a => a.id === achievement.id);
-
             if (!isUnlocked && achievement.condition(this.gameState, battleState)) {
                 this.gameState.addAchievement(achievement);
                 unlockedAchievements.push(achievement);
                 this.showAchievementNotification(achievement);
             }
         });
+
 
         return unlockedAchievements;
     }

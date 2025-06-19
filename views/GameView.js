@@ -205,13 +205,13 @@ class GameView {
     modal.style.display = "block";
   }
 
-  setRating(rating) {
-    const stars = document.querySelectorAll(".star");
-    stars.forEach((star, index) => {
-      star.classList.toggle("active", index < rating);
-    });
-    window.app.setSelectedRating(rating);
-  }
+  // setRating(rating) {
+  //   const stars = document.querySelectorAll(".star");
+  //   stars.forEach((star, index) => {
+  //     star.classList.toggle("active", index < rating);
+  //   });
+  //   window.app.setSelectedRating(rating);
+  // }
 
   closeModal() {
     document.getElementById("cardModal").style.display = "none";
