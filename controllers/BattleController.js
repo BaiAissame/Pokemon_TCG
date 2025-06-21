@@ -46,7 +46,12 @@ export default class BattleController {
 
         this.chooseOpponent()
         this.chooseActiveCard();
-        // this.music();
+        this.soundService.playMusic('next-battle.mp3');
+        setTimeout(() => {
+            this.battleViews.hiddenModalVS();
+            this.soundService.playMusic('encounter.mp3', true);
+        }, 3700);
+       
     }
 
     startTimer() {
@@ -55,10 +60,7 @@ export default class BattleController {
         }, 1000);
     }
 
-    music() {
-        this.soundService.playMusic();
-    }
-
+   
     async drawCards() {
         await this.openBooster(this.selectedBoosterType);
     }
@@ -131,16 +133,7 @@ export default class BattleController {
             return;
         }
 
-        // this.battleViews.showChooseActiveModal(this.gameState.hand, (selectedCard) => {
-        // if (
-        //     this.battleState.playerActiveCard &&
-        //     this.battleState.playerActiveCard.id === selectedCard.id &&
-        //     this.battleState.playerHP < this.battleState.playerActiveCard.getHP()
-        // ) {
-        //     // this.updateBattleZone();
-        //     // this.checkAttackReady();
-        //     // return;
-        // }
+        // Vérifier si une carte est déjà sélectionnée
         if (localStorage.getItem('selectedCard') == null) {
 
             const data = {
@@ -180,7 +173,6 @@ export default class BattleController {
             this.checkAttackReady();
             this.soundService.playSound('cardPlay');
         }
-        // });
     }
 
     async chooseOpponent() {

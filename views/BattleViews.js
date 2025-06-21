@@ -803,4 +803,9 @@ export default class BattleViews {
         });
         window.app.setSelectedRating(rating);
     }
+
+
+    hiddenModalVS() {     
+            document.getElementById("vs-modal").style.display = "none";
+    }
 }

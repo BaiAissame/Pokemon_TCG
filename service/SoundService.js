@@ -5,6 +5,8 @@ class SoundService {
         this.enabled = true;
         this.volume = 0.5;
         this.loadSounds();
+        this.audio = null;
+     
     }
 
     loadSounds() {
@@ -73,28 +75,39 @@ class SoundService {
         this.volume = Math.max(0, Math.min(1, volume));
     }
 
-    playMusic() {
-        const firstAudio = new Audio('./music/next-battle.mp3');
-        const secondAudio = new Audio('./music/Encounter.mp3');
-        firstAudio.loop = false;
-        secondAudio.loop = true;
+    playMusic(musicFile, loop = false) {
+        
+        if (this.audio) {
+            this.audio.pause();
+            this.audio.currentTime = 0;
+        }
 
-        // Quand la première musique se termine, on lance la seconde
-        firstAudio.addEventListener('ended', () => {
-            secondAudio.play();
-        });
+        const audio = new Audio('./music/' + musicFile);
+        const secondAudio = new Audio('./music/Encounter.mp3');
+        audio.loop = loop;
 
         // Tentative de lecture automatique, sinon attend un clic utilisateur
-        firstAudio.play().catch(() => {
+        audio.play().catch(() => {
             document.body.addEventListener('click', function playMusicOnce() {
-                firstAudio.play();
+                audio.play();
                 document.body.removeEventListener('click', playMusicOnce);
             });
         });
-        // secondAudio.volume = 0.5;
+
+        this.audio = audio;
     }
 
     looserSound() {
+
+        if(this.firstAudio) {
+            this.firstAudio.pause();
+            this.firstAudio.currentTime = 0;
+        }
+        if(this.secondAudio) {
+            this.secondAudio.pause();
+            this.secondAudio.currentTime = 0;
+        }
+
         const audio = new Audio('./music/baby-crying.mp3');
         audio.loop = false;
         audio.play().catch(() => {
