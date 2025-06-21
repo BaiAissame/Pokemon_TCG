@@ -88,11 +88,19 @@ body {
 
 .main-container {
     display: grid;
-    grid-template-columns: 1fr 250px;
+    /* grid-template-columns: 1fr 250px; */
     gap: 2rem;
     padding: 2rem;
     max-width: 1600px;
     margin: 0 auto;
+}
+
+.game-main {
+    grid-template-columns: 1fr 350px;
+}
+
+.battle-main {
+    grid-template-columns: 1fr 250px;
 }
 
 .game-area {
@@ -105,10 +113,6 @@ body {
 
 .deck-section {
     grid-column: span 2;
-    /* display: grid; */
-    /* grid-template-columns: 1fr 1fr; */
-    /* gap: 2rem; */
-    /* margin-bottom: 2rem; */
 }
 
 .deck {
