@@ -1464,16 +1464,15 @@ body {
 /* Grille des cartes de boosters */
 .boosters-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 350px));
+    grid-template-columns: 1fr !important;
     gap: 1.5rem;
     margin-bottom: 2rem;
-    max-width: 1200px;
+    max-width: 350px; 
     margin-left: auto;
     margin-right: auto;
     width: 100%;
     box-sizing: border-box;
     justify-content: center;
-    /* Centre les cartes */
 }
 
 /* Carte de booster individuelle */

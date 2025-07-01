@@ -26,9 +26,9 @@
     </div> -->
     <header>
         <nav class="main-nav">
-            <span class="nav-link active">🏠 Accueil</span>
-            <span href="battle.html" class="nav-link">⚔️ Combat</span>
-            <span href="collection.html" class="nav-link">📚 Collection</span>
+            <a class="nav-link active">🏠 Accueil</a>
+            <a href="battle.html" class="nav-link">⚔️ Combat</a>
+            <a href="collection.html" class="nav-link">📚 Collection</a>
         </nav>
     </header>
 
@@ -75,59 +75,6 @@
                     <div id="message"></div>
                 </div>
 
-                <div class="action-panel">
-                    <h3>📊 Statistiques</h3>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-value" id="totalCards">0</div>
-                            <div class="stat-label">Cartes totales</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="rareCards">0</div>
-                            <div class="stat-label">Cartes rares</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="boosters">0</div>
-                            <div class="stat-label">Boosters ouverts</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="battles">0</div>
-                            <div class="stat-label">Combats</div>
-                        </div>
-                    </div>
-                    <p><strong>Dernière session:</strong> <span id="lastDraw">Jamais</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal for card details -->
-        <div id="cardModal" class="modal">
-            <div class="modal-content" style="display: flex;flex-direction: column;align-items: center;">
-                <button class="close-btn" onclick="app.closeModal()">&times;</button>
-                <!-- <h2 style="text-align: center;">Détails de la Carte</h2> -->
-                <div class="card-detail" id="cardDetail"></div>
-            </div>
-        </div>
-
-        <!-- Modal for trainer interaction -->
-        <div id="trainerModal" class="modal">
-            <div class="modal-content">
-                <button class="close-btn" onclick="app.closeTrainerModal()">&times;</button>
-                <h2 id="trainerModalTitle">Interaction avec le Dresseur</h2>
-                <div class="comment-section">
-                    <h4>Laisser un commentaire:</h4>
-                    <textarea class="comment-input" id="commentInput"
-                        placeholder="Votre commentaire sur ce dresseur..."></textarea>
-                    <h4>Note:</h4>
-                    <div class="rating" id="rating">
-                        <span class="star" data-rating="1">⭐</span>
-                        <span class="star" data-rating="2">⭐</span>
-                        <span class="star" data-rating="3">⭐</span>
-                        <span class="star" data-rating="4">⭐</span>
-                        <span class="star" data-rating="5">⭐</span>
-                    </div>
-                    <button class="btn" onclick="app.submitTrainerFeedback()">💾 Envoyer</button>
-                </div>
             </div>
         </div>
     </main>
