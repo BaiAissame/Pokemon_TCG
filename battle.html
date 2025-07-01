@@ -27,7 +27,6 @@
             <a href="index.html" class="nav-link">🏠 Accueil</a>
             <a href="battle.html" class="nav-link active">⚔️ Combat</a>
             <a href="collection.html" class="nav-link">📚 Collection</a>
-            <div>💰 Crédits: <span id="credits">100</span></div>
         </nav>
     </header>
 
@@ -80,43 +79,6 @@
 
         </div>
 
-        <div class="sidebar">
-            <div class="action-panel">
-                <h3>🎯 Actions</h3>
-                <div id="drawTimer" class="timer">Prêt à tirer!</div>
-                <button class="btn" id="drawBtn" onclick="app.drawCards()">
-                    🎴 Tirer un Booster (5 cartes)
-                </button>
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    Ouverture du booster...
-                </div>
-                <div id="message"></div>
-            </div>
-
-            <div class="action-panel">
-                <h3>📊 Statistiques</h3>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalCards">0</div>
-                        <div class="stat-label">Cartes totales</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="rareCards">0</div>
-                        <div class="stat-label">Cartes rares</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="boosters">0</div>
-                        <div class="stat-label">Boosters ouverts</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="battles">0</div>
-                        <div class="stat-label">Combats</div>
-                    </div>
-                </div>
-                <p><strong>Dernière session:</strong> <span id="lastDraw">Jamais</span></p>
-            </div>
-        </div>
 
         <!-- Modal for card details -->
         <div id="cardModal" class="modal">

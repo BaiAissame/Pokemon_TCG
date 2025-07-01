@@ -356,7 +356,7 @@ class GameView {
                   ${sortedCards.map((card, index) => `
                       <div class="enhanced-card-item ${card.rarity?.name?.toLowerCase().replace(' ', '-') || 'common'}"
                            style="animation-delay: ${index * 0.1}s"
-                           onclick="window.app.showCardDetails(window.currentBoosterCards[${result.cards.indexOf(card)}])">
+                           >
                           ${card.image ? `
                               <img src="${card.image}" alt="${card.name}" class="enhanced-card-image"
                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">

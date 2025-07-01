@@ -147,7 +147,6 @@ export default class BattleViews {
     updateDisplay(gameState) {
         this.updateDeck(gameState.deck);
         this.updateHand(gameState.hand);
-        this.updateStats(gameState);
     }
 
     updateDeck(deck) {
@@ -176,16 +175,6 @@ export default class BattleViews {
         });
     }
 
-    updateStats(gameState) {
-        document.getElementById("totalCards").textContent = gameState.totalCards;
-        document.getElementById("rareCards").textContent = gameState.rareCards;
-        document.getElementById("boosters").textContent = gameState.boosters;
-        document.getElementById("battles").textContent = gameState.battles;
-        document.getElementById("credits").textContent = gameState.credits;
-        document.getElementById("lastDraw").textContent = gameState.lastDrawTime
-            ? new Date(gameState.lastDrawTime).toLocaleString("fr-FR")
-            : "Jamais";
-    }
 
     updateTimer(gameState) {
         const remainingTime = gameState.getRemainingTime();
@@ -230,9 +219,9 @@ export default class BattleViews {
                     </div>
                 </div>
             `;
+            cardEl.addEventListener("click", () => window.app.showCardDetails(card));
         }
 
-        cardEl.addEventListener("click", () => window.app.showCardDetails(card));
         cardEl.addEventListener("dragstart", this.handleDragStart.bind(this));
         cardEl.addEventListener("dragend", this.handleDragEnd.bind(this));
 
@@ -733,7 +722,7 @@ export default class BattleViews {
                     ${sortedCards.map((card, index) => `
                         <div class="enhanced-card-item ${card.rarity?.name?.toLowerCase().replace(' ', '-') || 'common'}"
                              style="animation-delay: ${index * 0.1}s"
-                             onclick="window.app.showCardDetails(window.currentBoosterCards[${result.cards.indexOf(card)}])">
+                             >
                             ${card.image ? `
                                 <img src="${card.image}" alt="${card.name}" class="enhanced-card-image"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
