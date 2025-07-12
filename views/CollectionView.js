@@ -4,17 +4,23 @@ export default class CollectionView {
         this.currentView = 'grid';
         this.selectedCards = new Set();
         this.isSelectionMode = false;
+        this.currentDeck = []; // Stockage local du deck
     }
 
-    renderCollection(cards, stats, filters) {
+    // MÉTHODE MISE À JOUR : accepte maintenant le paramètre currentDeck
+    renderCollection(cards, stats, filters, currentDeck = []) {
         const container = document.getElementById('collectionContainer');
         if (!container) return;
 
-        container.innerHTML = this.generateCollectionHTML(cards, stats, filters);
+        // Stocker le deck pour l'utiliser dans d'autres méthodes
+        this.currentDeck = currentDeck;
+
+        container.innerHTML = this.generateCollectionHTML(cards, stats, filters, currentDeck);
         this.attachEventListeners();
     }
 
-    generateCollectionHTML(cards, stats, filters) {
+    // MÉTHODE MISE À JOUR : accepte maintenant le paramètre currentDeck
+    generateCollectionHTML(cards, stats, filters, currentDeck = []) {
         return `
             <div class="collection-header">
                 <div class="collection-title">
@@ -23,35 +29,30 @@ export default class CollectionView {
                         <span class="stat-badge">📦 ${stats.total} cartes</span>
                         <span class="stat-badge rare">✨ ${stats.rare} rares</span>
                         <span class="stat-badge favorited">❤️ ${stats.favorited} favorites</span>
+                        <span class="stat-badge deck">🎴 ${currentDeck.length} dans le deck</span>
                     </div>
                 </div>
-
+    
                 <div class="collection-actions">
-                    <button class="btn btn-primary" id="deckBuilderBtn">
-                        🏗️ Constructeur de Deck
-                    </button>
                     <button class="btn btn-secondary" id="collectionStatsBtn">
                         📊 Statistiques
                     </button>
-                    <button class="btn btn-secondary" id="exportCollectionBtn">
-                        📤 Exporter
-                    </button>
                 </div>
             </div>
-
+    
             <div class="collection-controls">
                 <div class="search-bar">
                     <input type="text" id="collectionSearch" placeholder="🔍 Rechercher une carte..."
                            value="${filters.searchQuery || ''}" class="search-input">
                     <button class="btn-icon" id="clearSearchBtn">❌</button>
                 </div>
-
+    
                 <div class="collection-filters">
                     <select id="typeFilter" class="filter-select">
                         <option value="">Tous les types</option>
                         ${this.generateTypeOptions(stats.byType, filters.type)}
                     </select>
-
+    
                     <select id="rarityFilter" class="filter-select">
                         <option value="">Toutes les raretés</option>
                         <option value="Common" ${filters.rarity === 'Common' ? 'selected' : ''}>Commune</option>
@@ -60,13 +61,19 @@ export default class CollectionView {
                         <option value="Ultra Rare" ${filters.rarity === 'Ultra Rare' ? 'selected' : ''}>Ultra Rare</option>
                         <option value="Secret Rare" ${filters.rarity === 'Secret Rare' ? 'selected' : ''}>Secret Rare</option>
                     </select>
-
+    
                     <select id="favoritedFilter" class="filter-select">
                         <option value="">Toutes les cartes</option>
                         <option value="true" ${filters.favorited === true ? 'selected' : ''}>Favorites seulement</option>
                         <option value="false" ${filters.favorited === false ? 'selected' : ''}>Non favorites</option>
                     </select>
 
+                    <select id="deckFilter" class="filter-select">
+                        <option value="">Toutes les cartes</option>
+                        <option value="inDeck">Dans le deck</option>
+                        <option value="notInDeck">Pas dans le deck</option>
+                    </select>
+    
                     <select id="sortFilter" class="filter-select">
                         <option value="dateAdded" ${filters.sortBy === 'dateAdded' ? 'selected' : ''}>Date d'ajout</option>
                         <option value="name" ${filters.sortBy === 'name' ? 'selected' : ''}>Nom</option>
@@ -74,7 +81,7 @@ export default class CollectionView {
                         <option value="timesUsed" ${filters.sortBy === 'timesUsed' ? 'selected' : ''}>Utilisation</option>
                     </select>
                 </div>
-
+    
                 <div class="view-controls">
                     <button class="btn-icon ${this.currentView === 'grid' ? 'active' : ''}" id="gridViewBtn">🎴</button>
                     <button class="btn-icon ${this.currentView === 'list' ? 'active' : ''}" id="listViewBtn">📝</button>
@@ -83,12 +90,21 @@ export default class CollectionView {
                     </button>
                 </div>
             </div>
-
+    
             <div class="collection-content">
-                ${cards.length === 0 ? this.generateEmptyState() : this.generateCardsHTML(cards)}
+                ${currentDeck.length === 0 ? this.generateEmptyStateHTML() : this.generateCardsHTML(currentDeck)}
             </div>
-
+    
             ${this.isSelectionMode ? this.generateSelectionToolbar() : ''}
+        `;
+    }
+
+    generateEmptyStateHTML() {
+        return `
+            <div class="empty-collection">
+                <h3>Votre collection est vide</h3>
+                <p>Vous n'avez pas encore de cartes dans votre collection.</p>
+            </div>
         `;
     }
 
@@ -99,11 +115,11 @@ export default class CollectionView {
             .join('');
     }
 
-    generateCardsHTML(cards) {
+    generateCardsHTML(currentDeck) {
         if (this.currentView === 'grid') {
-            return this.generateGridView(cards);
+            return this.generateGridView(currentDeck);
         } else {
-            return this.generateListView(cards);
+            return this.generateListView(currentDeck);
         }
     }
 
@@ -125,6 +141,7 @@ export default class CollectionView {
                     <span class="col-rarity">Rareté</span>
                     <span class="col-hp">PV</span>
                     <span class="col-used">Utilisée</span>
+                    <span class="col-deck">Dans Deck</span>
                     <span class="col-actions">Actions</span>
                 </div>
                 ${cards.map(card => this.generateCardListItem(card)).join('')}
@@ -132,55 +149,28 @@ export default class CollectionView {
         `;
     }
 
+    // MÉTHODE MISE À JOUR : affiche si la carte est dans le deck
     generateCardGridItem(card) {
         const isSelected = this.selectedCards.has(card.id);
+        const isInDeck = this.isCardInDeck(card.id);
+        
         return `
-            <div class="collection-card ${card.getTypeClass()} ${isSelected ? 'selected' : ''}"
-                 data-card-id="${card.id}">
-                ${this.isSelectionMode ? `<div class="card-checkbox ${isSelected ? 'checked' : ''}">✓</div>` : ''}
-
                 <div class="card-image-container">
                     ${card.image
                         ? `<img src="${card.image}" alt="${card.name}" class="card-image" loading="lazy">`
                         : `<div class="card-placeholder">${card.name}</div>`
                     }
-                    <div class="card-overlay">
-                        <button class="btn-icon favorite-btn ${card.favorited ? 'favorited' : ''}"
-                                data-card-id="${card.id}" title="Favori">
-                            ${card.favorited ? '❤️' : '🤍'}
-                        </button>
-                        <button class="btn-icon details-btn" data-card-id="${card.id}" title="Détails">
-                            👁️
-                        </button>
-                    </div>
                 </div>
-
-                <div class="card-info">
-                    <div class="card-name">${card.name}</div>
-                    <div class="card-type">${card.types?.[0]?.name || 'Unknown'}</div>
-                    <div class="card-stats">
-                        <span class="hp">❤️ ${card.getHP()}</span>
-                        <span class="attack">⚔️ ${card.getAttackPower()}</span>
-                    </div>
-                    <div class="card-meta">
-                        <span class="rarity ${card.rarity?.name?.toLowerCase()}">${card.rarity?.name || 'Common'}</span>
-                        <span class="usage">🎮 ${card.timesUsed || 0}x</span>
-                    </div>
-                </div>
-
-                <div class="card-actions">
-                    <button class="btn btn-small btn-primary add-to-deck-btn" data-card-id="${card.id}">
-                        ➕ Deck
-                    </button>
-                </div>
-            </div>
         `;
     }
 
+    // MÉTHODE MISE À JOUR : affiche si la carte est dans le deck
     generateCardListItem(card) {
         const isSelected = this.selectedCards.has(card.id);
+        const isInDeck = this.isCardInDeck(card.id);
+        
         return `
-            <div class="collection-list-item ${isSelected ? 'selected' : ''}" data-card-id="${card.id}">
+            <div class="collection-list-item ${isSelected ? 'selected' : ''} ${isInDeck ? 'in-deck' : ''}" data-card-id="${card.id}">
                 ${this.isSelectionMode ? `<div class="list-checkbox ${isSelected ? 'checked' : ''}">✓</div>` : ''}
 
                 <div class="col-image">
@@ -193,6 +183,7 @@ export default class CollectionView {
                 <div class="col-name">
                     <span class="card-name">${card.name}</span>
                     ${card.favorited ? '<span class="favorite-indicator">❤️</span>' : ''}
+                    ${isInDeck ? '<span class="deck-indicator">🎴</span>' : ''}
                 </div>
 
                 <div class="col-type">
@@ -207,29 +198,35 @@ export default class CollectionView {
 
                 <div class="col-used">${card.timesUsed || 0}x</div>
 
+                <div class="col-deck">
+                    ${isInDeck ? '✅ Oui' : '❌ Non'}
+                </div>
+
                 <div class="col-actions">
                     <button class="btn-icon favorite-btn ${card.favorited ? 'favorited' : ''}"
                             data-card-id="${card.id}" title="Favori">
                         ${card.favorited ? '❤️' : '🤍'}
                     </button>
                     <button class="btn-icon details-btn" data-card-id="${card.id}" title="Détails">👁️</button>
-                    <button class="btn-icon add-to-deck-btn" data-card-id="${card.id}" title="Ajouter au deck">➕</button>
+                    <button class="btn-icon add-to-deck-btn ${isInDeck ? 'disabled' : ''}" 
+                            data-card-id="${card.id}" 
+                            title="${isInDeck ? 'Déjà dans le deck' : 'Ajouter au deck'}"
+                            ${isInDeck ? 'disabled' : ''}>
+                        ${isInDeck ? '✅' : '➕'}
+                    </button>
                 </div>
             </div>
         `;
     }
 
-    generateEmptyState() {
-        return `
-            <div class="empty-collection">
-                <div class="empty-icon">📦</div>
-                <h3>Votre collection est vide</h3>
-                <p>Tirez vos premières cartes pour commencer votre collection!</p>
-                <button class="btn btn-primary" onclick="window.app.navigateToGame()">
-                    🎴 Tirer des cartes
-                </button>
-            </div>
-        `;
+    // NOUVELLE MÉTHODE : vérifier si une carte est dans le deck
+    isCardInDeck(cardId) {
+        return this.currentDeck.some(deckCard => deckCard.id === cardId);
+    }
+
+    // NOUVELLE MÉTHODE : compter le nombre de fois qu'une carte est dans le deck
+    getCardCountInDeck(cardId) {
+        return this.currentDeck.filter(deckCard => deckCard.id === cardId).length;
     }
 
     generateSelectionToolbar() {
@@ -264,7 +261,8 @@ export default class CollectionView {
             });
         }
 
-        ['typeFilter', 'rarityFilter', 'favoritedFilter', 'sortFilter'].forEach(filterId => {
+        // AJOUT du filtre deck
+        ['typeFilter', 'rarityFilter', 'favoritedFilter', 'sortFilter', 'deckFilter'].forEach(filterId => {
             const element = document.getElementById(filterId);
             if (element) {
                 element.addEventListener('change', (e) => {
@@ -276,6 +274,9 @@ export default class CollectionView {
         document.getElementById('gridViewBtn')?.addEventListener('click', () => this.changeView('grid'));
         document.getElementById('listViewBtn')?.addEventListener('click', () => this.changeView('list'));
         document.getElementById('selectModeBtn')?.addEventListener('click', () => this.toggleSelectionMode());
+
+        // NOUVEAU : bouton pour voir le deck
+        document.getElementById('viewDeckBtn')?.addEventListener('click', () => this.showDeckModal());
 
         document.querySelectorAll('.favorite-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -294,7 +295,9 @@ export default class CollectionView {
         document.querySelectorAll('.add-to-deck-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.onAddToDeck(btn.dataset.cardId);
+                if (!btn.disabled) {
+                    this.onAddToDeck(btn.dataset.cardId);
+                }
             });
         });
 
@@ -314,6 +317,40 @@ export default class CollectionView {
         document.getElementById('clearSelectionBtn')?.addEventListener('click', () => this.clearSelection());
     }
 
+    // NOUVELLE MÉTHODE : afficher le deck dans une modal
+    showDeckModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                <h2>🎴 Mon Deck Actuel (${this.currentDeck.length} cartes)</h2>
+                <div class="deck-view">
+                    ${this.currentDeck.length === 0 
+                        ? '<p>Votre deck est vide. Ajoutez des cartes depuis votre collection !</p>'
+                        : `<div class="deck-grid">
+                            ${this.currentDeck.map(card => `
+                                <div class="deck-card-mini">
+                                    <img src="${card.image}" alt="${card.name}" class="deck-card-image">
+                                    <div class="deck-card-name">${card.name}</div>
+                                    <div class="deck-card-type">${card.types?.[0]?.name || 'Unknown'}</div>
+                                </div>
+                            `).join('')}
+                          </div>`
+                    }
+                </div>
+                <div class="deck-modal-actions">
+                    <button class="btn btn-primary" onclick="document.getElementById('deckBuilderModal').style.display='block'; this.closest('.modal').remove();">
+                        🏗️ Modifier le Deck
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        modal.style.display = 'block';
+    }
+
     onSearch(query) {
         if (this.controller) {
             this.controller.searchCards(query);
@@ -322,8 +359,27 @@ export default class CollectionView {
 
     onFilterChange(filterType, value) {
         if (this.controller) {
-            this.controller.setFilter(filterType, value || null);
+            // Gérer le filtre spécial pour le deck
+            if (filterType === 'deck') {
+                this.handleDeckFilter(value);
+            } else {
+                this.controller.setFilter(filterType, value || null);
+            }
         }
+    }
+
+    // NOUVELLE MÉTHODE : gérer le filtrage par deck
+    handleDeckFilter(value) {
+        // Cette méthode devra être implémentée dans le contrôleur
+        // Pour l'instant, on peut simuler en filtrant côté vue
+        if (value === 'inDeck') {
+            // Filtrer pour ne montrer que les cartes dans le deck
+            console.log('Filtrer: cartes dans le deck');
+        } else if (value === 'notInDeck') {
+            // Filtrer pour ne montrer que les cartes pas dans le deck
+            console.log('Filtrer: cartes pas dans le deck');
+        }
+        // Vous devrez étendre le contrôleur pour gérer ce type de filtre
     }
 
     onToggleFavorite(cardId) {
@@ -344,6 +400,9 @@ export default class CollectionView {
 
         if (!modal || !cardDetail) return;
 
+        const isInDeck = this.isCardInDeck(card.id);
+        const deckCount = this.getCardCountInDeck(card.id);
+
         cardDetail.innerHTML = `
             <div class="card-detail-container">
                 <div class="card-detail-image">
@@ -351,6 +410,7 @@ export default class CollectionView {
                         ? `<img src="${card.image}" alt="${card.name}" class="detail-card-image">`
                         : `<div class="detail-card-placeholder">${card.name}</div>`
                     }
+                    ${isInDeck ? '<div class="detail-deck-badge">🎴 Dans le deck</div>' : ''}
                 </div>
                 <div class="card-detail-info">
                     <h2 class="card-detail-name">${card.name}</h2>
@@ -373,6 +433,10 @@ export default class CollectionView {
                         <div class="stat-row">
                             <span class="stat-label">Utilisée:</span>
                             <span class="stat-value">🎮 ${card.timesUsed || 0} fois</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Dans le deck:</span>
+                            <span class="stat-value">🎴 ${deckCount} fois</span>
                         </div>
                         <div class="stat-row">
                             <span class="stat-label">Ajoutée le:</span>
@@ -407,11 +471,10 @@ export default class CollectionView {
                     ` : ''}
 
                     <div class="card-detail-actions">
-                        <button class="btn btn-primary" onclick="window.collectionApp.controller.addCardToDeck('${card.id}'); window.collectionApp.closeModal();">
-                            ➕ Ajouter au Deck
-                        </button>
-                        <button class="btn btn-secondary favorite-toggle" onclick="window.collectionApp.controller.toggleFavorite('${card.id}'); window.collectionApp.closeModal();">
-                            ${card.favorited ? '💔 Retirer des favoris' : '❤️ Ajouter aux favoris'}
+                        <button class="btn ${isInDeck ? 'btn-secondary' : 'btn-primary'}" 
+                                onclick="window.collectionApp.controller.addCardToDeck('${card.id}'); window.collectionApp.closeModal();"
+                                ${isInDeck ? 'disabled' : ''}>
+                            ${isInDeck ? '✓ Déjà dans le deck' : '➕ Ajouter au Deck'}
                         </button>
                     </div>
                 </div>
@@ -534,8 +597,8 @@ export default class CollectionView {
                         <div class="stat-label">Cartes rares</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">${stats.favorited}</div>
-                        <div class="stat-label">Favorites</div>
+                        <div class="stat-value">${this.currentDeck.length}</div>
+                        <div class="stat-label">Dans le deck</div>
                     </div>
                 </div>
 
@@ -580,4 +643,58 @@ export default class CollectionView {
             this.controller.refreshView();
         }
     }
+
+
+    showCardDetails(card) {
+        const modal = document.getElementById("cardModal");
+        const cardDetail = document.getElementById("cardDetail");
+    
+        if (!modal || !cardDetail) return;
+    
+        cardDetail.innerHTML = `
+          <div style="max-width: 500px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 1rem;">
+              <h3 style="color: #2c3e50; margin-bottom: 0.8rem; font-size: 1.3em;">
+                ${card.name}
+              </h3>
+              ${card.image ? `
+                <img src="${card.image}" alt="${card.name}" style="
+                  max-width: 200px;
+                  max-height: 200px;
+                  border-radius: 10px;
+                  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+                  margin-bottom: 0.8rem;
+                  object-fit: cover;
+                ">
+              ` : ''}
+    
+              <div style="display: flex; justify-content: space-around; gap: 0.5rem; margin-top: 0.8rem;">
+                <div style="
+                  background: linear-gradient(45deg, #e74c3c, #c0392b);
+                  color: white;
+                  padding: 0.5rem 0.8rem;
+                  border-radius: 15px;
+                  font-weight: bold;
+                  font-size: 0.9em;
+                ">
+                  ❤️ ${card.getHP()} PV
+                </div>
+                ${card.types && card.types.length > 0 ? `
+                  <div style="
+                    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+                    color: white;
+                    padding: 0.5rem 0.8rem;
+                    border-radius: 15px;
+                    font-weight: bold;
+                    font-size: 0.9em;
+                  ">
+                    ⭐ ${card.types.map(t => t.name || t).slice(0, 2).join(', ')}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+        modal.style.display = "block";
+      }
 }

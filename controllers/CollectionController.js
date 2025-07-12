@@ -32,6 +32,11 @@ export default class CollectionController {
         }
     }
 
+    // Méthode pour exposer le deck
+    getCurrentDeck() {
+        return this.gameState.deck;
+    }
+
     searchCards(query = '') {
         this.currentSearchQuery = query;
         return this.gameState.searchCollection(query, this.currentFilters);
@@ -129,23 +134,21 @@ export default class CollectionController {
         return Array.from(rarities).sort();
     }
 
+    // Méthode corrigée - utilise les méthodes existantes du GameStateModel
     createDeckFromCollection(cardIds, deckName = 'Mon Deck') {
-        const selectedCards = cardIds.map(id =>
-            this.gameState.collection.find(card => card.id === id)
-        ).filter(card => card !== undefined);
-
-        if (selectedCards.length === 0) {
-            return false;
-        }
-
-        selectedCards.forEach(card => {
-            const deckCard = new CardModel(card);
-            this.gameState.deck.push(deckCard);
-            card.timesUsed = (card.timesUsed || 0) + 1;
+        let addedCount = 0;
+        
+        cardIds.forEach(cardId => {
+            if (this.gameState.addCardFromCollectionToDeck(cardId)) {
+                addedCount++;
+            }
         });
 
-        this.gameState.save();
-        return true;
+        if (addedCount > 0) {
+            this.gameState.save();
+            return true;
+        }
+        return false;
     }
 
     exportCollection() {
@@ -157,23 +160,18 @@ export default class CollectionController {
         };
     }
 
+    // Méthode corrigée - utilise addCardsToCollection du GameStateModel
     importCollection(data) {
         if (!data.collection || !Array.isArray(data.collection)) {
             throw new Error('Format de données invalide');
         }
 
-        data.collection.forEach(cardData => {
-            const existingCard = this.gameState.collection.find(c => c.id === cardData.id);
-            if (!existingCard) {
-                const card = new CardModel(cardData);
-                card.addedAt = cardData.addedAt || new Date().toISOString();
-                card.timesUsed = cardData.timesUsed || 0;
-                card.favorited = cardData.favorited || false;
-                this.gameState.collection.push(card);
-            }
+        const cardsToAdd = data.collection.map(cardData => {
+            const card = new CardModel(cardData);
+            return card;
         });
 
-        this.gameState.save();
+        this.gameState.addCardsToCollection(cardsToAdd);
         return true;
     }
 
@@ -186,9 +184,12 @@ export default class CollectionController {
         const stats = this.getCollectionStats();
         const recommendations = [];
 
-        const unusedRares = this.gameState.collection.filter(card =>
-            card.isRare() && (card.timesUsed || 0) === 0
-        );
+        // Correction : utilise une méthode qui existe réellement
+        const unusedRares = this.gameState.collection.filter(card => {
+            // Vérifier si la carte est rare (basé sur la rareté)
+            const isRare = card.rarity && ['Rare', 'Ultra Rare', 'Secret Rare'].includes(card.rarity.name);
+            return isRare && (card.timesUsed || 0) === 0;
+        });
 
         if (unusedRares.length > 0) {
             recommendations.push({
@@ -210,5 +211,37 @@ export default class CollectionController {
         }
 
         return recommendations;
+    }
+
+    // Méthodes supplémentaires utiles
+    getDeckSize() {
+        return this.gameState.deck.length;
+    }
+
+    clearDeck() {
+        this.gameState.deck = [];
+        this.gameState.save();
+    }
+
+    removeCardFromDeck(cardId) {
+        const cardIndex = this.gameState.deck.findIndex(card => card.id === cardId);
+        if (cardIndex !== -1) {
+            const removedCard = this.gameState.deck.splice(cardIndex, 1)[0];
+            this.gameState.save();
+            return removedCard;
+        }
+        return null;
+    }
+
+    // Méthode pour obtenir les cartes du deck avec leurs détails
+    getDeckWithDetails() {
+        return this.gameState.deck.map(deckCard => {
+            const collectionCard = this.gameState.collection.find(c => c.id === deckCard.id);
+            return {
+                ...deckCard,
+                timesUsed: collectionCard?.timesUsed || 0,
+                favorited: collectionCard?.favorited || false
+            };
+        });
     }
 }
