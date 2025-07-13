@@ -1,6 +1,8 @@
 // controllers/CollectionController.js
 import GameStateModel from '../models/GameStateModel.js';
 import CardModel from '../models/CardModel.js';
+import CollectionView from "../views/CollectionView.js";
+
 
 export default class CollectionController {
     constructor(gameState) {
@@ -17,6 +19,7 @@ export default class CollectionController {
         this.onCardAdded = null;
         this.onCardRemoved = null;
         this.onFavoriteToggled = null;
+        this.collectionView = new CollectionView();
     }
 
     setView(view) {
@@ -105,11 +108,12 @@ export default class CollectionController {
 
     showCardDetails(cardId) {
         const card = this.gameState.collection.find(c => c.id === cardId);
-        if (card && this.view) {
-            this.view.showCardDetails(card);
+        if (card && this.collectionView) {
+            this.collectionView.showCardDetails(card);
+        } else {
+            console.error('Carte non trouvée ou vue non disponible:', cardId);
         }
     }
-
     getCollectionStats() {
         return this.gameState.getCollectionStats();
     }

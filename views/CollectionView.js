@@ -155,7 +155,7 @@ export default class CollectionView {
         const isInDeck = this.isCardInDeck(card.id);
         
         return `
-                <div class="card-image-container">
+            <div class="card-image-container clickable-card" data-card-id="${card.id}">
                     ${card.image
                         ? `<img src="${card.image}" alt="${card.name}" class="card-image" loading="lazy">`
                         : `<div class="card-placeholder">${card.name}</div>`
@@ -271,6 +271,14 @@ export default class CollectionView {
             }
         });
 
+        document.querySelectorAll('.clickable-card').forEach(cardElement => {
+            cardElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const cardId = cardElement.dataset.cardId;
+                this.onShowCardDetails(cardId);
+            });
+        });
+    
         document.getElementById('gridViewBtn')?.addEventListener('click', () => this.changeView('grid'));
         document.getElementById('listViewBtn')?.addEventListener('click', () => this.changeView('list'));
         document.getElementById('selectModeBtn')?.addEventListener('click', () => this.toggleSelectionMode());
@@ -411,72 +419,6 @@ export default class CollectionView {
                         : `<div class="detail-card-placeholder">${card.name}</div>`
                     }
                     ${isInDeck ? '<div class="detail-deck-badge">🎴 Dans le deck</div>' : ''}
-                </div>
-                <div class="card-detail-info">
-                    <h2 class="card-detail-name">${card.name}</h2>
-
-                    <div class="card-detail-meta">
-                        <span class="card-detail-type ${card.getTypeClass()}">
-                            ${card.types?.[0]?.name || 'Unknown'}
-                        </span>
-                        <span class="card-detail-rarity ${card.rarity?.name?.toLowerCase()}">
-                            ${card.rarity?.name || 'Common'}
-                        </span>
-                        <span class="card-detail-hp">❤️ ${card.getHP()} PV</span>
-                    </div>
-
-                    <div class="card-detail-stats">
-                        <div class="stat-row">
-                            <span class="stat-label">Attaque:</span>
-                            <span class="stat-value">⚔️ ${card.getAttackPower()}</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Utilisée:</span>
-                            <span class="stat-value">🎮 ${card.timesUsed || 0} fois</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Dans le deck:</span>
-                            <span class="stat-value">🎴 ${deckCount} fois</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Ajoutée le:</span>
-                            <span class="stat-value">📅 ${new Date(card.addedAt || Date.now()).toLocaleDateString('fr-FR')}</span>
-                        </div>
-                    </div>
-
-                    ${card.attacks && card.attacks.length > 0 ? `
-                        <div class="card-detail-attacks">
-                            <h4>⚔️ Attaques</h4>
-                            ${card.attacks.slice(0, 2).map(attack => `
-                                <div class="attack-item">
-                                    <div class="attack-name">${attack.name}</div>
-                                    <div class="attack-damage">${attack.damage || '?'} dégâts</div>
-                                    ${attack.text ? `<div class="attack-text">${attack.text}</div>` : ''}
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-
-                    ${card.weaknesses && card.weaknesses.length > 0 ? `
-                        <div class="card-detail-weaknesses">
-                            <h4>🔥 Faiblesses</h4>
-                            <div class="weakness-list">
-                                ${card.weaknesses.slice(0, 3).map(w => `
-                                    <span class="weakness-item">
-                                        ${typeof w.type === 'object' ? w.type.name : w.type} ${w.value || '×2'}
-                                    </span>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    <div class="card-detail-actions">
-                        <button class="btn ${isInDeck ? 'btn-secondary' : 'btn-primary'}" 
-                                onclick="window.collectionApp.controller.addCardToDeck('${card.id}'); window.collectionApp.closeModal();"
-                                ${isInDeck ? 'disabled' : ''}>
-                            ${isInDeck ? '✓ Déjà dans le deck' : '➕ Ajouter au Deck'}
-                        </button>
-                    </div>
                 </div>
             </div>
         `;
@@ -643,58 +585,4 @@ export default class CollectionView {
             this.controller.refreshView();
         }
     }
-
-
-    showCardDetails(card) {
-        const modal = document.getElementById("cardModal");
-        const cardDetail = document.getElementById("cardDetail");
-    
-        if (!modal || !cardDetail) return;
-    
-        cardDetail.innerHTML = `
-          <div style="max-width: 500px; margin: 0 auto;">
-            <div style="text-align: center; margin-bottom: 1rem;">
-              <h3 style="color: #2c3e50; margin-bottom: 0.8rem; font-size: 1.3em;">
-                ${card.name}
-              </h3>
-              ${card.image ? `
-                <img src="${card.image}" alt="${card.name}" style="
-                  max-width: 200px;
-                  max-height: 200px;
-                  border-radius: 10px;
-                  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-                  margin-bottom: 0.8rem;
-                  object-fit: cover;
-                ">
-              ` : ''}
-    
-              <div style="display: flex; justify-content: space-around; gap: 0.5rem; margin-top: 0.8rem;">
-                <div style="
-                  background: linear-gradient(45deg, #e74c3c, #c0392b);
-                  color: white;
-                  padding: 0.5rem 0.8rem;
-                  border-radius: 15px;
-                  font-weight: bold;
-                  font-size: 0.9em;
-                ">
-                  ❤️ ${card.getHP()} PV
-                </div>
-                ${card.types && card.types.length > 0 ? `
-                  <div style="
-                    background: linear-gradient(45deg, #9b59b6, #8e44ad);
-                    color: white;
-                    padding: 0.5rem 0.8rem;
-                    border-radius: 15px;
-                    font-weight: bold;
-                    font-size: 0.9em;
-                  ">
-                    ⭐ ${card.types.map(t => t.name || t).slice(0, 2).join(', ')}
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-        `;
-        modal.style.display = "block";
-      }
 }

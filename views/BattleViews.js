@@ -797,4 +797,99 @@ export default class BattleViews {
     hiddenModalVS() {     
             document.getElementById("vs-modal").style.display = "none";
     }
+    showCardDetails(card) {
+        const modal = document.getElementById("cardModal");
+        const cardDetail = document.getElementById("cardDetail");
+    
+        if (!modal || !cardDetail) return;
+    
+        cardDetail.innerHTML = `
+          <div style="max-width: 500px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 1rem;">
+              <h3 style="color: #2c3e50; margin-bottom: 0.8rem; font-size: 1.3em;">
+                ${card.name}
+              </h3>
+              ${card.image ? `
+                <img src="${card.image}" alt="${card.name}" style="
+                  max-width: 200px;
+                  max-height: 200px;
+                  border-radius: 10px;
+                  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+                  margin-bottom: 0.8rem;
+                  object-fit: cover;
+                ">
+              ` : ''}
+    
+              <div style="display: flex; justify-content: space-around; gap: 0.5rem; margin-top: 0.8rem;">
+                <div style="
+                  background: linear-gradient(45deg, #e74c3c, #c0392b);
+                  color: white;
+                  padding: 0.5rem 0.8rem;
+                  border-radius: 15px;
+                  font-weight: bold;
+                  font-size: 0.9em;
+                ">
+                  ❤️ ${card.getHP()} PV
+                </div>
+                ${card.types && card.types.length > 0 ? `
+                  <div style="
+                    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+                    color: white;
+                    padding: 0.5rem 0.8rem;
+                    border-radius: 15px;
+                    font-weight: bold;
+                    font-size: 0.9em;
+                  ">
+                    ⭐ ${card.types.map(t => t.name || t).slice(0, 2).join(', ')}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+    
+            ${card.attacks && card.attacks.length > 0 ? `
+              <div style="margin-top: 1rem;">
+                <h4 style="color: #e74c3c; margin-bottom: 0.8rem; font-size: 1.1em;">⚔️ Attaques</h4>
+                <div style="display: grid; gap: 0.6rem; max-height: 200px; overflow-y: auto;">
+                  ${card.attacks.slice(0, 4).map(attack => `
+                    <div style="
+                      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                      border: 1px solid #dee2e6;
+                      border-radius: 8px;
+                      padding: 0.6rem;
+                    ">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                        <h6 style="color: #2c3e50; margin: 0; font-size: 0.95em; font-weight: bold;">
+                          ${attack.name}
+                        </h6>
+                        <span style="
+                          background: linear-gradient(45deg, #e74c3c, #c0392b);
+                          color: white;
+                          padding: 0.2rem 0.5rem;
+                          border-radius: 12px;
+                          font-weight: bold;
+                          font-size: 0.8em;
+                        ">
+                          ${attack.damage || 0} 💥
+                        </span>
+                      </div>
+                      ${attack.text ? `
+                        <div style="
+                          font-size: 0.75em;
+                          color: #2c3e50;
+                          line-height: 1.3;
+                          margin-top: 0.3rem;
+                        ">
+                          ${attack.text.length > 60 ? attack.text.substring(0, 60) + '...' : attack.text}
+                        </div>
+                      ` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+    
+        modal.style.display = "block";
+      }
 }
