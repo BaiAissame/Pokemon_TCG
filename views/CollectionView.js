@@ -463,7 +463,7 @@ export default class CollectionView {
         modal.innerHTML = `
             <div class="modal-content">
                 <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
-                <h2>📊 Statistiques de Collection</h2>
+                <h2 style="padding-bottom: 2em;">📊 Statistiques de Collection</h2>
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-value">${stats.total}</div>
@@ -477,26 +477,6 @@ export default class CollectionView {
                         <div class="stat-value">${this.currentDeck.length}</div>
                         <div class="stat-label">Dans le deck</div>
                     </div>
-                </div>
-
-                <h3>Répartition par type</h3>
-                <div class="type-stats">
-                    ${Object.entries(stats.byType).map(([type, count]) =>
-                        `<div class="type-stat">
-                            <span class="type-name">${type}</span>
-                            <span class="type-count">${count}</span>
-                        </div>`
-                    ).join('')}
-                </div>
-
-                <h3>Cartes les plus utilisées</h3>
-                <div class="top-cards">
-                    ${stats.mostUsed.map(card =>
-                        `<div class="top-card">
-                            <span class="card-name">${card.name}</span>
-                            <span class="usage-count">${card.timesUsed || 0}x</span>
-                        </div>`
-                    ).join('')}
                 </div>
             </div>
         `;
