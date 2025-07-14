@@ -3,7 +3,6 @@ export default class CollectionView {
     constructor() {
         this.currentView = 'grid';
         this.selectedCards = new Set();
-        this.isSelectionMode = false;
         this.currentDeck = []; // Stockage local du deck
     }
 
@@ -25,12 +24,6 @@ export default class CollectionView {
             <div class="collection-header">
                 <div class="collection-title">
                     <h2>📚 Ma Collection</h2>
-                    <div class="collection-stats">
-                        <span class="stat-badge">📦 ${stats.total} cartes</span>
-                        <span class="stat-badge rare">✨ ${stats.rare} rares</span>
-                        <span class="stat-badge favorited">❤️ ${stats.favorited} favorites</span>
-                        <span class="stat-badge deck">🎴 ${currentDeck.length} dans le deck</span>
-                    </div>
                 </div>
     
                 <div class="collection-actions">
@@ -44,58 +37,13 @@ export default class CollectionView {
                 <div class="search-bar">
                     <input type="text" id="collectionSearch" placeholder="🔍 Rechercher une carte..."
                            value="${filters.searchQuery || ''}" class="search-input">
-                    <button class="btn-icon" id="clearSearchBtn">❌</button>
-                </div>
-    
-                <div class="collection-filters">
-                    <select id="typeFilter" class="filter-select">
-                        <option value="">Tous les types</option>
-                        ${this.generateTypeOptions(stats.byType, filters.type)}
-                    </select>
-    
-                    <select id="rarityFilter" class="filter-select">
-                        <option value="">Toutes les raretés</option>
-                        <option value="Common" ${filters.rarity === 'Common' ? 'selected' : ''}>Commune</option>
-                        <option value="Uncommon" ${filters.rarity === 'Uncommon' ? 'selected' : ''}>Peu commune</option>
-                        <option value="Rare" ${filters.rarity === 'Rare' ? 'selected' : ''}>Rare</option>
-                        <option value="Ultra Rare" ${filters.rarity === 'Ultra Rare' ? 'selected' : ''}>Ultra Rare</option>
-                        <option value="Secret Rare" ${filters.rarity === 'Secret Rare' ? 'selected' : ''}>Secret Rare</option>
-                    </select>
-    
-                    <select id="favoritedFilter" class="filter-select">
-                        <option value="">Toutes les cartes</option>
-                        <option value="true" ${filters.favorited === true ? 'selected' : ''}>Favorites seulement</option>
-                        <option value="false" ${filters.favorited === false ? 'selected' : ''}>Non favorites</option>
-                    </select>
-
-                    <select id="deckFilter" class="filter-select">
-                        <option value="">Toutes les cartes</option>
-                        <option value="inDeck">Dans le deck</option>
-                        <option value="notInDeck">Pas dans le deck</option>
-                    </select>
-    
-                    <select id="sortFilter" class="filter-select">
-                        <option value="dateAdded" ${filters.sortBy === 'dateAdded' ? 'selected' : ''}>Date d'ajout</option>
-                        <option value="name" ${filters.sortBy === 'name' ? 'selected' : ''}>Nom</option>
-                        <option value="rarity" ${filters.sortBy === 'rarity' ? 'selected' : ''}>Rareté</option>
-                        <option value="timesUsed" ${filters.sortBy === 'timesUsed' ? 'selected' : ''}>Utilisation</option>
-                    </select>
-                </div>
-    
-                <div class="view-controls">
-                    <button class="btn-icon ${this.currentView === 'grid' ? 'active' : ''}" id="gridViewBtn">🎴</button>
-                    <button class="btn-icon ${this.currentView === 'list' ? 'active' : ''}" id="listViewBtn">📝</button>
-                    <button class="btn-icon" id="selectModeBtn" title="Mode sélection">
-                        ${this.isSelectionMode ? '✅' : '☑️'}
-                    </button>
+                    <button class="btn-icon" id="clearSearchBtn" title="Effacer la recherche">❌</button>
                 </div>
             </div>
     
             <div class="collection-content">
-                ${currentDeck.length === 0 ? this.generateEmptyStateHTML() : this.generateCardsHTML(currentDeck)}
+                ${cards.length === 0 ? this.generateEmptyStateHTML() : this.generateCardsHTML(cards)}
             </div>
-    
-            ${this.isSelectionMode ? this.generateSelectionToolbar() : ''}
         `;
     }
 
@@ -115,11 +63,11 @@ export default class CollectionView {
             .join('');
     }
 
-    generateCardsHTML(currentDeck) {
+    generateCardsHTML(cards) {
         if (this.currentView === 'grid') {
-            return this.generateGridView(currentDeck);
+            return this.generateGridView(cards);
         } else {
-            return this.generateListView(currentDeck);
+            return this.generateListView(cards);
         }
     }
 
@@ -171,7 +119,6 @@ export default class CollectionView {
         
         return `
             <div class="collection-list-item ${isSelected ? 'selected' : ''} ${isInDeck ? 'in-deck' : ''}" data-card-id="${card.id}">
-                ${this.isSelectionMode ? `<div class="list-checkbox ${isSelected ? 'checked' : ''}">✓</div>` : ''}
 
                 <div class="col-image">
                     ${card.image
@@ -229,29 +176,6 @@ export default class CollectionView {
         return this.currentDeck.filter(deckCard => deckCard.id === cardId).length;
     }
 
-    generateSelectionToolbar() {
-        return `
-            <div class="selection-toolbar">
-                <div class="selection-info">
-                    <span>${this.selectedCards.size} carte(s) sélectionnée(s)</span>
-                </div>
-                <div class="selection-actions">
-                    <button class="btn btn-primary" id="addSelectedToDeckBtn">
-                        ➕ Ajouter au deck (${this.selectedCards.size})
-                    </button>
-                    <button class="btn btn-secondary" id="favoriteSelectedBtn">
-                        ❤️ Marquer comme favoris
-                    </button>
-                    <button class="btn btn-danger" id="removeSelectedBtn">
-                        🗑️ Supprimer
-                    </button>
-                    <button class="btn btn-secondary" id="clearSelectionBtn">
-                        ❌ Désélectionner tout
-                    </button>
-                </div>
-            </div>
-        `;
-    }
 
     attachEventListeners() {
         const searchInput = document.getElementById('collectionSearch');
@@ -260,9 +184,42 @@ export default class CollectionView {
                 this.onSearch(e.target.value);
             });
         }
-
-        // AJOUT du filtre deck
-        ['typeFilter', 'rarityFilter', 'favoritedFilter', 'sortFilter', 'deckFilter'].forEach(filterId => {
+    
+        // Bouton pour effacer la recherche
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', () => {
+                const searchInput = document.getElementById('collectionSearch');
+                if (searchInput) {
+                    searchInput.value = '';
+                    this.onSearch('');
+                }
+            });
+        }
+    
+        // Bouton pour effacer tous les filtres
+        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                if (this.controller) {
+                    // Effacer tous les filtres
+                    this.controller.clearFilters();
+                    
+                    // Réinitialiser les éléments de l'interface
+                    document.getElementById('collectionSearch').value = '';
+                    document.getElementById('typeFilter').value = '';
+                    document.getElementById('rarityFilter').value = '';
+                    document.getElementById('favoritedFilter').value = '';
+                    document.getElementById('sortFilter').value = 'dateAdded';
+                    
+                    // Rafraîchir la vue
+                    this.controller.refreshView();
+                }
+            });
+        }
+    
+        // Filtres
+        ['typeFilter', 'rarityFilter', 'favoritedFilter', 'sortFilter'].forEach(filterId => {
             const element = document.getElementById(filterId);
             if (element) {
                 element.addEventListener('change', (e) => {
@@ -270,7 +227,48 @@ export default class CollectionView {
                 });
             }
         });
+    
+        // Autres événements...
+        this.attachCardEventListeners();
+        
+        // Boutons de vue
+        document.getElementById('gridViewBtn')?.addEventListener('click', () => this.changeView('grid'));
+        document.getElementById('listViewBtn')?.addEventListener('click', () => this.changeView('list'));
+        document.getElementById('selectModeBtn')?.addEventListener('click', () => this.toggleSelectionMode());
+    
+        // Boutons de sélection
+        document.getElementById('addSelectedToDeckBtn')?.addEventListener('click', () => this.onAddSelectedToDeck());
+        document.getElementById('removeSelectedBtn')?.addEventListener('click', () => this.onRemoveSelected());
+        document.getElementById('clearSelectionBtn')?.addEventListener('click', () => this.clearSelection());
+    }
 
+    onSearch(query) {
+        if (this.controller) {
+            const results = this.controller.searchCards(query);
+            // Rafraîchir la vue avec les résultats
+            this.renderFilteredResults(results);
+        }
+    }
+    renderFilteredResults(cards) {
+        const contentContainer = document.querySelector('.collection-content');
+        if (!contentContainer) return;
+        
+        if (cards.length === 0) {
+            contentContainer.innerHTML = `
+                <div class="no-results">
+                    <h3>Aucune carte trouvée</h3>
+                    <p>Essayez de modifier votre recherche ou vos filtres.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        contentContainer.innerHTML = this.generateCardsHTML(cards);
+        this.attachCardEventListeners(); // Réattacher les événements aux nouvelles cartes
+    }
+
+    attachCardEventListeners() {
+        // Événements pour les cartes cliquables
         document.querySelectorAll('.clickable-card').forEach(cardElement => {
             cardElement.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -279,27 +277,23 @@ export default class CollectionView {
             });
         });
     
-        document.getElementById('gridViewBtn')?.addEventListener('click', () => this.changeView('grid'));
-        document.getElementById('listViewBtn')?.addEventListener('click', () => this.changeView('list'));
-        document.getElementById('selectModeBtn')?.addEventListener('click', () => this.toggleSelectionMode());
-
-        // NOUVEAU : bouton pour voir le deck
-        document.getElementById('viewDeckBtn')?.addEventListener('click', () => this.showDeckModal());
-
+        // Événements pour les boutons favoris
         document.querySelectorAll('.favorite-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.onToggleFavorite(btn.dataset.cardId);
             });
         });
-
+    
+        // Événements pour les boutons détails
         document.querySelectorAll('.details-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.onShowCardDetails(btn.dataset.cardId);
             });
         });
-
+    
+        // Événements pour les boutons d'ajout au deck
         document.querySelectorAll('.add-to-deck-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -308,73 +302,22 @@ export default class CollectionView {
                 }
             });
         });
-
-        if (this.isSelectionMode) {
-            document.querySelectorAll('.collection-card, .collection-list-item').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    if (!e.target.closest('button')) {
-                        this.toggleCardSelection(card.dataset.cardId);
-                    }
-                });
-            });
-        }
-
-        document.getElementById('addSelectedToDeckBtn')?.addEventListener('click', () => this.onAddSelectedToDeck());
-        document.getElementById('favoriteSelectedBtn')?.addEventListener('click', () => this.onFavoriteSelected());
-        document.getElementById('removeSelectedBtn')?.addEventListener('click', () => this.onRemoveSelected());
-        document.getElementById('clearSelectionBtn')?.addEventListener('click', () => this.clearSelection());
-    }
-
-    // NOUVELLE MÉTHODE : afficher le deck dans une modal
-    showDeckModal() {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
-                <h2>🎴 Mon Deck Actuel (${this.currentDeck.length} cartes)</h2>
-                <div class="deck-view">
-                    ${this.currentDeck.length === 0 
-                        ? '<p>Votre deck est vide. Ajoutez des cartes depuis votre collection !</p>'
-                        : `<div class="deck-grid">
-                            ${this.currentDeck.map(card => `
-                                <div class="deck-card-mini">
-                                    <img src="${card.image}" alt="${card.name}" class="deck-card-image">
-                                    <div class="deck-card-name">${card.name}</div>
-                                    <div class="deck-card-type">${card.types?.[0]?.name || 'Unknown'}</div>
-                                </div>
-                            `).join('')}
-                          </div>`
-                    }
-                </div>
-                <div class="deck-modal-actions">
-                    <button class="btn btn-primary" onclick="document.getElementById('deckBuilderModal').style.display='block'; this.closest('.modal').remove();">
-                        🏗️ Modifier le Deck
-                    </button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-    }
-
-    onSearch(query) {
-        if (this.controller) {
-            this.controller.searchCards(query);
-        }
     }
 
     onFilterChange(filterType, value) {
         if (this.controller) {
-            // Gérer le filtre spécial pour le deck
-            if (filterType === 'deck') {
-                this.handleDeckFilter(value);
+            if (filterType === 'favorited') {
+                // Convertir la string en boolean ou null
+                const boolValue = value === 'true' ? true : value === 'false' ? false : null;
+                const results = this.controller.setFilter(filterType, boolValue);
             } else {
-                this.controller.setFilter(filterType, value || null);
+                const results = this.controller.setFilter(filterType, value || null);
             }
+            // La vue sera rafraîchie automatiquement par le controller.refreshView()
         }
     }
+    
+    
 
     // NOUVELLE MÉTHODE : gérer le filtrage par deck
     handleDeckFilter(value) {
@@ -429,14 +372,6 @@ export default class CollectionView {
     onAddToDeck(cardId) {
         if (this.controller) {
             this.controller.addCardToDeck(cardId);
-        }
-    }
-
-    toggleSelectionMode() {
-        this.isSelectionMode = !this.isSelectionMode;
-        this.selectedCards.clear();
-        if (this.controller) {
-            this.controller.refreshView();
         }
     }
 

@@ -42,7 +42,28 @@ export default class CollectionController {
 
     searchCards(query = '') {
         this.currentSearchQuery = query;
-        return this.gameState.searchCollection(query, this.currentFilters);
+        
+        let filteredCards = this.gameState.collection;
+
+        // Filtrage par requête de recherche
+        if (query && query.trim() !== '') {
+            const searchTerm = query.toLowerCase();
+            filteredCards = filteredCards.filter(card => 
+                card.name.toLowerCase().includes(searchTerm) ||
+                (card.types && card.types.some(type => type.toLowerCase().includes(searchTerm))));
+        }
+        
+        // Application des filtres
+        if (this.currentFilters.type) {
+            filteredCards = filteredCards.filter(card => 
+                card.types && card.types.some(type => type.name === this.currentFilters.type)
+            );
+        }
+        
+        // Tri des résultats
+        filteredCards = this.sortCards(filteredCards, this.currentFilters.sortBy);
+        
+        return filteredCards;
     }
 
     setFilter(filterType, value) {
@@ -246,6 +267,25 @@ export default class CollectionController {
                 timesUsed: collectionCard?.timesUsed || 0,
                 favorited: collectionCard?.favorited || false
             };
+        });
+    }
+
+    sortCards(cards, sortBy) {
+        return [...cards].sort((a, b) => {
+            switch (sortBy) {
+                case 'name':
+                    return a.name.localeCompare(b.name);
+                case 'rarity':
+                    const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Ultra Rare', 'Secret Rare'];
+                    const aRarity = a.rarity ? rarityOrder.indexOf(a.rarity.name) : 0;
+                    const bRarity = b.rarity ? rarityOrder.indexOf(b.rarity.name) : 0;
+                    return bRarity - aRarity; // Tri décroissant (plus rare en premier)
+                case 'timesUsed':
+                    return (b.timesUsed || 0) - (a.timesUsed || 0);
+                case 'dateAdded':
+                default:
+                    return new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0);
+            }
         });
     }
 }
