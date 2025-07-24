@@ -239,6 +239,9 @@ export default class BattleViews {
 
     showMessage(message, type) {
         const messageEl = document.getElementById("message");
+        if (!messageEl) {
+            return;
+        }
         messageEl.textContent = message;
         messageEl.className = `message ${type}`;
 

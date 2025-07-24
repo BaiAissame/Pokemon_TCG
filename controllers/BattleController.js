@@ -57,9 +57,9 @@ export default class BattleController {
   }
 
   startTimer() {
-    setInterval(() => {
-      this.battleViews.updateTimer(this.gameState);
-    }, 1000);
+    // setInterval(() => {
+    //   this.battleViews.updateTimer(this.gameState);
+    // }, 1000);
   }
 
   async drawCards() {
